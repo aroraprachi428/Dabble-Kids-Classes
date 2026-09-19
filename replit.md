@@ -1,6 +1,6 @@
-# [Project name]
+# Dabble
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Dabble helps Bangalore parents find vetted coaches and classes for their children and book a trial.
 
 ## Run & Operate
 
@@ -9,7 +9,7 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Bookings currently live in API server memory and reset when the server restarts.
 
 ## Stack
 
@@ -22,19 +22,29 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/dabble` — React/Vite parent experience
+- `artifacts/api-server/src/lib/dabble-data.ts` — placeholder coach catalog and in-memory bookings
+- `artifacts/api-server/src/routes` — coach discovery and booking API routes
+- `lib/api-spec/openapi.yaml` — API contract and generated frontend hooks
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The coach catalog is placeholder data until the supplied JSON catalog replaces it.
+- Filtering is deterministic keyword matching for now; the API contract can support later AI intent parsing.
+- Trial bookings are intentionally stored in memory for the MVP.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Free-text class discovery with editable intent filters
+- Ranked, vetted coach listings and detailed profiles
+- Trial slot selection, checkout fee breakdown, and booking confirmation
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Warm, friendly, trustworthy parent-focused design
+- Coral or amber primary with calm teal secondary, rounded corners, generous spacing, soft shadows
+- Mobile-first with excellent support at 390px
+- Every async list view needs loading, empty, and error states
 
 ## Gotchas
 
