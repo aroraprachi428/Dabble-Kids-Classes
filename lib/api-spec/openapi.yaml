@@ -14,6 +14,8 @@ tags:
     description: Coach discovery
   - name: bookings
     description: Trial bookings
+  - name: recommendations
+    description: AI-assisted class recommendations
 paths:
   /healthz:
     get:
@@ -137,6 +139,31 @@ paths:
                 $ref: "#/components/schemas/Booking"
         "404":
           description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /recommend:
+    post:
+      operationId: recommendClasses
+      tags: [recommendations]
+      summary: Recommend classes from a natural-language request
+      description: Returns parsed parent intent and ranked catalog class ids.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecommendationInput"
+      responses:
+        "200":
+          description: Ranked recommendations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecommendationResponse"
+        "400":
+          description: Invalid recommendation request
           content:
             application/json:
               schema:
@@ -293,4 +320,66 @@ components:
           type: string
       required:
         - error
+    RecommendationInput:
+      type: object
+      properties:
+        query:
+          type: string
+          minLength: 1
+      required:
+        - query
+    RecommendationIntent:
+      type: object
+      properties:
+        activity:
+          type: string
+        childAge:
+          type: ["integer", "null"]
+        level:
+          type: string
+        area:
+          type: string
+        day:
+          type: string
+        timeOfDay:
+          type: string
+        maxPrice:
+          type: ["integer", "null"]
+      required:
+        - activity
+        - childAge
+        - level
+        - area
+        - day
+        - timeOfDay
+        - maxPrice
+    RecommendationResult:
+      type: object
+      properties:
+        id:
+          type: string
+        matchScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        reason:
+          type: string
+      required:
+        - id
+        - matchScore
+        - reason
+    RecommendationResponse:
+      type: object
+      properties:
+        intent:
+          $ref: "#/components/schemas/RecommendationIntent"
+        results:
+          type: array
+          minItems: 5
+          maxItems: 8
+          items:
+            $ref: "#/components/schemas/RecommendationResult"
+      required:
+        - intent
+        - results
 

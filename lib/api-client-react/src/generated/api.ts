@@ -25,7 +25,9 @@ import type {
   Coach,
   ErrorResponse,
   HealthStatus,
-  ListCoachesParams
+  ListCoachesParams,
+  RecommendationInput,
+  RecommendationResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -459,4 +461,93 @@ export function useGetBooking<TData = Awaited<ReturnType<typeof getBooking>>, TE
 
 
 
+
+export const getRecommendClassesUrl = () => {
+
+
+
+
+  return `/api/recommend`
+}
+
+/**
+ * Returns parsed parent intent and ranked catalog class ids.
+ * @summary Recommend classes from a natural-language request
+ */
+export const recommendClasses = async (recommendationInput: RecommendationInput, options?: Parameters<typeof customFetch>[1]): Promise<RecommendationResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<RecommendationResponse>(getRecommendClassesUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(recommendationInput)
+  }
+);}
+
+
+
+
+
+export const getRecommendClassesMutationKey = () => ['recommendClasses'] as const;
+
+export const getRecommendClassesMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recommendClasses>>, TError,RecommendClassesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recommendClasses>>, TError,RecommendClassesMutationVariables, TContext> => {
+
+const mutationKey = getRecommendClassesMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recommendClasses>>, RecommendClassesMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  recommendClasses(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecommendClassesMutationResult = NonNullable<Awaited<ReturnType<typeof recommendClasses>>>
+    export type RecommendClassesMutationBody = BodyType<RecommendationInput>
+    export type RecommendClassesMutationError = ErrorType<ErrorResponse>
+    export type RecommendClassesMutationVariables = {data: BodyType<RecommendationInput>}
+
+    /**
+ * @summary Recommend classes from a natural-language request
+ */
+export const useRecommendClasses = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recommendClasses>>, TError,RecommendClassesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof recommendClasses>>,
+        TError,
+        RecommendClassesMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRecommendClassesMutationOptions(options));
+    }
 

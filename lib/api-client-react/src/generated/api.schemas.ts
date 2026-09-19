@@ -63,6 +63,42 @@ export interface ErrorResponse {
   error: string;
 }
 
+export interface RecommendationInput {
+  /** @minLength 1 */
+  query: string;
+}
+
+export interface RecommendationIntent {
+  activity: string;
+  /** @nullable */
+  childAge: number | null;
+  level: string;
+  area: string;
+  day: string;
+  timeOfDay: string;
+  /** @nullable */
+  maxPrice: number | null;
+}
+
+export interface RecommendationResult {
+  id: string;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  matchScore: number;
+  reason: string;
+}
+
+export interface RecommendationResponse {
+  intent: RecommendationIntent;
+  /**
+     * @minItems 5
+     * @maxItems 8
+     */
+  results: RecommendationResult[];
+}
+
 export type ListCoachesParams = {
 q?: string;
 activity?: string;

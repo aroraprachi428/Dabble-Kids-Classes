@@ -217,3 +217,40 @@ export const GetBookingResponse = zod.object({
 }))
 
 
+/**
+ * Returns parsed parent intent and ranked catalog class ids.
+ * @summary Recommend classes from a natural-language request
+ */
+
+
+
+export const RecommendClassesBody = zod.object({
+  "query": zod.string().min(1)
+})
+
+export const recommendClassesResponseResultsItemMatchScoreMin = 0;
+export const recommendClassesResponseResultsItemMatchScoreMax = 100;
+
+export const recommendClassesResponseResultsMin = 5;
+export const recommendClassesResponseResultsMax = 8;
+
+
+
+export const RecommendClassesResponse = zod.object({
+  "intent": zod.object({
+  "activity": zod.string(),
+  "childAge": zod.number().int().nullable(),
+  "level": zod.string(),
+  "area": zod.string(),
+  "day": zod.string(),
+  "timeOfDay": zod.string(),
+  "maxPrice": zod.number().int().nullable()
+}),
+  "results": zod.array(zod.object({
+  "id": zod.string(),
+  "matchScore": zod.number().int().min(recommendClassesResponseResultsItemMatchScoreMin).max(recommendClassesResponseResultsItemMatchScoreMax),
+  "reason": zod.string()
+})).min(recommendClassesResponseResultsMin).max(recommendClassesResponseResultsMax)
+})
+
+

@@ -31,8 +31,8 @@ Dabble helps Bangalore parents find vetted coaches and classes for their childre
 ## Architecture decisions
 
 - The coach catalog is placeholder data until the supplied JSON catalog replaces it.
-- Filtering is deterministic keyword matching for now; the API contract can support later AI intent parsing.
 - Trial bookings are intentionally stored in memory for the MVP.
+- Recommendations prefer `ANTHROPIC_API_KEY`, fall back to `OPENAI_API_KEY`, then use validated deterministic local ranking if neither provider is available or an AI response fails.
 
 ## Product
 
@@ -40,6 +40,7 @@ Dabble helps Bangalore parents find vetted coaches and classes for their childre
 - Ranked, vetted coach listings and detailed profiles
 - Trial slot selection, checkout fee breakdown, and booking confirmation
 - Native Expo navigation, haptics, safe-area handling, and keyboard-aware checkout
+- Natural-language recommendations with parsed, editable intent chips and ranked match reasons
 
 ## User preferences
 

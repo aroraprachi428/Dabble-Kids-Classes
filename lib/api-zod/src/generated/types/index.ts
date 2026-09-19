@@ -12,4 +12,8 @@ export * from './coach';
 export * from './errorResponse';
 export * from './healthStatus';
 export * from './listCoachesParams';
+export * from './recommendationInput';
+export * from './recommendationIntent';
+export * from './recommendationResponse';
+export * from './recommendationResult';
 export * from './trialSlot';
