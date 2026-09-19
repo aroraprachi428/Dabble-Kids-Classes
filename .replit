@@ -1,4 +1,4 @@
-modules = ["nodejs-24"]
+modules = ["nodejs-24", "python-base-3.13"]
 
 [deployment]
 router = "application"
@@ -22,6 +22,3 @@ timeoutMs = 20000
 [userenv]
 
 [userenv.shared]
-"Gemini API Key" = "AQ.Ab8RN6JhgEv5bxTCoCbfnsMA2D8Sn32kIEFqPVKVWox68NzY_w"
-RAZORPAY_KEY_ID = "rzp_test_Tdqn25lv4kwPcE"
-RAZORPAY_KEY_SECRET = "TReVCBrYqVkIYyHTN8tRmnZV"
