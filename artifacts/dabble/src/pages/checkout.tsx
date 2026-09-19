@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
-import { useGetCoach, useCreatePaymentOrder, useVerifyPayment, BookingInput, PaymentOrder } from "@workspace/api-client-react";
+import { useGetCoach, useCreatePaymentOrder, useVerifyPayment, BookingInput, PaymentOrder, useListParentKids, getListParentKidsQueryKey, useListParentBookings, getListParentBookingsQueryKey } from "@workspace/api-client-react";
 import { ArrowLeft, ShieldCheck, CheckCircle2, MapPin, Calendar, Clock, CreditCard, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatRupee } from "@/lib/utils";
+import { formatRupee, cn } from "@/lib/utils";
 import coachPlaceholder from "@assets/generated_images/coach_placeholder.jpg";
+import { useAuth } from "@/hooks/use-auth";
 
 function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -40,11 +41,36 @@ type CheckoutValues = z.infer<typeof checkoutSchema>;
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [sessionData, setSessionData] = useState<{coachId: string, slotId: string, seats: number} | null>(null);
   
   const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null);
   const [savedValues, setSavedValues] = useState<CheckoutValues | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [selectedKidId, setSelectedKidId] = useState<string | null>(null);
+
+  const { data: apiKids } = useListParentKids({ query: { enabled: !!user && user.role === 'parent', queryKey: getListParentKidsQueryKey() } });
+  const { data: bookings } = useListParentBookings({ query: { enabled: !!user && user.role === 'parent', queryKey: getListParentBookingsQueryKey() } });
+
+  const kids = [...(apiKids || [])];
+  if (bookings) {
+    bookings.forEach(b => {
+      if (b.childName && b.childAge && !kids.find(k => k.name.toLowerCase() === b.childName.toLowerCase())) {
+        kids.push({ id: `derived-${b.id}`, name: b.childName, age: b.childAge });
+      }
+    });
+  }
+
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      setLocation(`/login?returnTo=${encodeURIComponent("/checkout")}`);
+      return;
+    }
+    if (!isAuthLoading && user && user.role === 'coach') {
+      setLocation('/coach');
+      return;
+    }
+  }, [user, isAuthLoading, setLocation]);
 
   useEffect(() => {
     const data = sessionStorage.getItem('dabble_checkout');
@@ -75,15 +101,38 @@ export default function Checkout() {
   const form = useForm<CheckoutValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      parentName: "",
-      parentEmail: "",
+      parentName: user?.name || "",
+      parentEmail: user?.email || "",
       parentPhone: "",
       childName: "",
       childAge: 4,
     },
   });
 
-  if (!sessionData) return null;
+  // Re-init form if user loads later
+  useEffect(() => {
+    if (user && !form.getValues('parentName')) {
+      form.setValue('parentName', user.name);
+      form.setValue('parentEmail', user.email);
+    }
+  }, [user, form]);
+
+  const handleKidSelect = (kidId: string) => {
+    if (kidId === "manual") {
+      setSelectedKidId(null);
+      form.setValue("childName", "");
+      form.setValue("childAge", 4);
+    } else {
+      const kid = kids?.find(k => k.id === kidId);
+      if (kid) {
+        setSelectedKidId(kid.id);
+        form.setValue("childName", kid.name);
+        form.setValue("childAge", kid.age);
+      }
+    }
+  };
+
+  if (!sessionData || isAuthLoading || !user) return null;
 
   if (isLoading) {
     return (
@@ -171,7 +220,7 @@ export default function Checkout() {
       prefill: {
         name: values.parentName,
         email: values.parentEmail,
-        contact: values.parentPhone,
+        contact: values.parentPhone.startsWith("+91") ? values.parentPhone : (values.parentPhone.replace(/\D/g, "").length === 10 ? `+91${values.parentPhone.replace(/\D/g, "")}` : values.parentPhone),
       },
       theme: {
         color: "#e6733c" // Primary color hex
@@ -311,6 +360,38 @@ export default function Checkout() {
                     <div className="w-10 h-10 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-lg shadow-md">2</div>
                     Child Details
                   </h2>
+                  
+                  {kids && kids.length > 0 && (
+                    <div className="mb-6 space-y-3">
+                      <FormLabel className="text-base font-bold">Select a saved profile</FormLabel>
+                      <div className="flex flex-wrap gap-3">
+                        {kids.map((kid) => (
+                          <button
+                            key={kid.id}
+                            type="button"
+                            onClick={() => handleKidSelect(kid.id)}
+                            className={cn(
+                              "px-4 py-2 rounded-[1rem] text-sm font-bold border-2 transition-all",
+                              selectedKidId === kid.id ? "border-secondary bg-secondary/10 text-secondary" : "border-transparent bg-accent/40 text-foreground hover:bg-accent"
+                            )}
+                          >
+                            {kid.name} ({kid.age})
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => handleKidSelect("manual")}
+                          className={cn(
+                            "px-4 py-2 rounded-[1rem] text-sm font-bold border-2 transition-all",
+                            selectedKidId === null ? "border-secondary bg-secondary/10 text-secondary" : "border-transparent bg-accent/40 text-foreground hover:bg-accent"
+                          )}
+                        >
+                          Someone else
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid sm:grid-cols-[1fr_120px] gap-6">
                     <FormField
                       control={form.control}
@@ -319,7 +400,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel className="text-base font-bold">Child's First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Aryan" className="h-14 rounded-2xl bg-accent/40 border-transparent focus-visible:border-secondary px-4 text-base" {...field} data-testid="input-child-name" />
+                            <Input placeholder="e.g. Aryan" className="h-14 rounded-2xl bg-accent/40 border-transparent focus-visible:border-secondary px-4 text-base" {...field} data-testid="input-child-name" disabled={selectedKidId !== null} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -332,7 +413,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel className="text-base font-bold">Age</FormLabel>
                           <FormControl>
-                            <Input type="number" min={4} max={18} placeholder="7" className="h-14 rounded-2xl bg-accent/40 border-transparent focus-visible:border-secondary px-4 text-base text-center" {...field} data-testid="input-child-age" />
+                            <Input type="number" min={4} max={18} placeholder="7" className="h-14 rounded-2xl bg-accent/40 border-transparent focus-visible:border-secondary px-4 text-base text-center" {...field} data-testid="input-child-age" disabled={selectedKidId !== null} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

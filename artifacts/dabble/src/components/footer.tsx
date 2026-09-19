@@ -1,4 +1,5 @@
 import { HeartHandshake, ShieldCheck, CreditCard } from "lucide-react";
+import { Link } from "wouter";
 
 export function Footer() {
   return (
@@ -41,6 +42,12 @@ export function Footer() {
             </div>
             <span className="font-semibold text-foreground">Dabble</span>
           </div>
+          
+          <div className="flex items-center gap-6 mb-4 md:mb-0">
+            <Link href="/coach" className="text-sm font-medium text-muted-foreground hover:text-foreground">Coach Dashboard</Link>
+            <Link href="/ops" className="text-sm font-medium text-muted-foreground hover:text-foreground">Team Analytics</Link>
+          </div>
+
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} Dabble Bangalore. All rights reserved.
           </p>

@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { AuthProvider } from '@/hooks/use-auth';
 
 import Home from '@/pages/home';
 import Results from '@/pages/results';
@@ -14,6 +15,12 @@ import CoachDetails from '@/pages/coach';
 import Checkout from '@/pages/checkout';
 import Confirmation from '@/pages/confirmation';
 import NotFound from '@/pages/not-found';
+import Login from '@/pages/login';
+import Signup from '@/pages/signup';
+import ParentBookings from '@/pages/account/bookings';
+import ParentKids from '@/pages/account/kids';
+import CoachDashboard from '@/pages/coach-dashboard';
+import Ops from '@/pages/ops';
 
 const queryClient = new QueryClient();
 
@@ -29,6 +36,12 @@ function Router() {
             <Route path="/coach/:id" component={CoachDetails} />
             <Route path="/checkout" component={Checkout} />
             <Route path="/confirmation/:bookingId" component={Confirmation} />
+            <Route path="/login" component={Login} />
+            <Route path="/signup" component={Signup} />
+            <Route path="/account/bookings" component={ParentBookings} />
+            <Route path="/account/kids" component={ParentKids} />
+            <Route path="/coach" component={CoachDashboard} />
+            <Route path="/ops" component={Ops} />
             <Route component={NotFound} />
           </Switch>
         </RoutedErrorBoundary>
@@ -48,7 +61,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
+          <AuthProvider>
+            <Router />
+          </AuthProvider>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>

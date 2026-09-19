@@ -1,6 +1,8 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { useGetBooking } from "@workspace/api-client-react";
-import { Check, Calendar, MapPin, ArrowRight, User, Heart, Share2, Users } from "lucide-react";
+import { Check, Calendar, MapPin, ArrowRight, User, Share2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,9 +11,25 @@ import coachPlaceholder from "@assets/generated_images/coach_placeholder.jpg";
 
 export default function Confirmation() {
   const { bookingId } = useParams();
+  const [, setLocation] = useLocation();
+  const { user, isLoading: isAuthLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthLoading && !user) {
+      setLocation(`/login?returnTo=${encodeURIComponent(`/confirmation/${bookingId}`)}`);
+      return;
+    }
+    if (!isAuthLoading && user && user.role === 'coach') {
+      setLocation('/coach');
+      return;
+    }
+  }, [user, isAuthLoading, setLocation, bookingId]);
+
   const { data: booking, isLoading, isError } = useGetBooking(bookingId!, {
-    query: { enabled: !!bookingId, queryKey: ['getBooking', bookingId] }
+    query: { enabled: !!user && user.role === 'parent' && !!bookingId, queryKey: ['getBooking', bookingId] }
   });
+
+  if (isAuthLoading || !user) return null;
 
   if (isLoading) {
     return (

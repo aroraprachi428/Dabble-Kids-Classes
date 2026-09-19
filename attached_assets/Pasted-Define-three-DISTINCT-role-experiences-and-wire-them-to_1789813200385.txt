@@ -1,0 +1,51 @@
+Define three DISTINCT role experiences and wire them to the seeded data. I've uploaded
+sample-bookings.json and sample-analytics.json to the backend.
+
+DATA LINKING (so dashboards aren't empty):
+- Load sample-bookings.json into the in-memory bookings store on startup. New bookings append here.
+- Add a parentEmail field to bookings. Assign 3 seeded bookings to the demo parent by setting their
+  parentEmail = "parent@demo.com" (e.g. bk-1001, bk-1005, bk-1016).
+- Link the demo coach account coach@demo.com to coachId for "Coach Deepak R." (exp-036) so their
+  dashboard shows those bookings.
+- Employee account ops@demo.com sees ALL data.
+
+ROUTING AFTER LOGIN (and guards):
+- Parent → "/" (home/search) with a "My Bookings" area. Parents CANNOT access /coach, /analytics, /ops.
+- Coach → "/coach". Coaches cannot access /analytics or /ops.
+- Employee → "/ops". 
+- Guards redirect unauthorized roles back to home. "Continue as guest" → home.
+
+========== PARENT experience ==========
+After login, the parent sees the normal consumer app PLUS a "My Bookings" page (nav link + on home):
+- Greeting: "Hi <parent first name>".
+- Upcoming trials: activity, coach name + photo, date/time, venue/area, status (Paid/Pending), amount.
+  Actions: View details, Cancel (mock).
+- Past trials: same info, with a "Book again" action.
+- Their child profile(s): child name + age (derive from their bookings).
+- A "✨ Plan my child's month" entry point.
+- Only THIS parent's bookings (filter by parentEmail). Empty state: "No bookings yet — find a class."
+
+========== COACH dashboard (/coach) ==========
+Header: coach name, photo, "Vetted ✓" badge, rating, area, category.
+KPI tiles: Upcoming sessions (slot.date >= today), Total bookings, Total earnings (₹ = sum of
+coachEarning where status=paid), Pending confirmations (count where status=pending).
+Bookings table (this coach only): parent name, child name + age, activity, slot (date/time), seats,
+amount, status. Sort upcoming first.
+"My offers" list (this coach's catalog items): title, format (private/group), venueType, age range,
+price, spots left.
+Read-only (no editing). Empty state if no bookings.
+
+========== EMPLOYEE / OPS dashboard (/ops) ==========
+Distinct internal skin (different header/color) + banner "Internal — Dabble team only".
+Read platform inputs from sample-analytics.json (searchCount, newParentSignups, activeCoaches,
+societiesLive, periodLabel); keep incrementing searchCount on each /api/recommend call.
+KPI tiles (COMPUTE from all bookings, don't hardcode): GMV (₹ = sum amount where paid), Dabble revenue
+(₹ = sum dabbleFee where paid), Total bookings, Pending bookings, Active coaches, Searches,
+Conversion (bookings ÷ searches %), Avg booking value, New parent signups, Societies live.
+Charts: bookings by category (bar), bookings by area (bar), bookings over time by createdAt (line).
+Top coaches table: coach, bookings, GMV, revenue (rank by GMV).
+Recent bookings feed: parent, child, activity, coach, amount, status, time (latest first).
+Desktop-optimized; read-only.
+
+Keep the guest golden path, search, recommendations, and Razorpay payment working unchanged.
+Only count status="paid" toward GMV/revenue everywhere.

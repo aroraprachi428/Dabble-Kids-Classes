@@ -3,6 +3,7 @@ import http from "node:http";
 import { after, before, beforeEach, test } from "node:test";
 import express from "express";
 import recommendationsRouter from "../src/routes/recommendations";
+import planRouter from "../src/routes/plan";
 import { catalogExperiences } from "../src/lib/dabble-data";
 
 type RecommendationResponse = {
@@ -58,6 +59,7 @@ before(async () => {
     next();
   });
   app.use(recommendationsRouter);
+  app.use(planRouter);
 
   server = http.createServer(app);
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -134,6 +136,20 @@ async function postRecommendation(query: string) {
     );
     request.on("error", reject);
     request.end(body);
+  });
+}
+
+async function request(path: string, payload: object): Promise<{ status: number; body: any }> {
+  const body = JSON.stringify(payload);
+  return new Promise((resolve, reject) => {
+    const req = http.request({ host: "127.0.0.1", port, path, method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body) } }, (response) => {
+      let text = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => { text += chunk; });
+      response.on("end", () => resolve({ status: response.statusCode ?? 0, body: JSON.parse(text) }));
+    });
+    req.on("error", reject);
+    req.end(body);
   });
 }
 
@@ -311,4 +327,14 @@ test("uses deterministic fallback when provider secrets are missing", async () =
 
   assert.deepEqual(first, second);
   assertSafeResponse(first);
+});
+
+test("plan returns distinct age-safe activities and enforces budget", async () => {
+  const response = await request("/plan", { childAge: 3 });
+  assert.equal(response.status, 200);
+  assert(response.body.activities.length >= 2 && response.body.activities.length <= 4);
+  assert(new Set(response.body.activities.map((item: { category: string }) => item.category)).size >= 2);
+  assert(response.body.activities.every((item: { id: string }) => catalogIds.has(item.id)));
+  const tooLow = await request("/plan", { childAge: 3, budget: 1 });
+  assert.equal(tooLow.status, 400);
 });

@@ -1,0 +1,41 @@
+Add an automated test module covering the P0 and P1 features. Use a lightweight runner (Vitest or
+Jest) wired to `npm test`, and create TESTS.md listing each feature → its test cases → pass/fail.
+For AI endpoints, MOCK the Gemini client (or force the keyword fallback) so tests are deterministic and
+never call the real API. Seed the in-memory store from sample-bookings.json for data-dependent tests.
+
+Cover these:
+
+DATA INTEGRITY (P0)
+- Every booking.experienceId exists in the catalog.
+- For each booking: amount == price × seats; dabbleFee == round(amount × 0.10); coachEarning == amount − dabbleFee.
+- Every catalog item has ageMin <= ageMax and at least one sessionFormats value.
+
+/api/recommend — AI matching (P0)
+- Returns the shape { intent, results:[{id, matchScore, reason}] }.
+- Every result.id exists in the catalog (no hallucinated ids).
+- Returns 5–8 results.
+- AGE RULE: for a query with childAge=3, no result has ageMin>3 or ageMax<3; unsafe activities
+  (MMA/boxing/gym/squash) never appear for young kids.
+- Fallback: when the AI client throws, results still return (keyword/area/day fallback), non-empty.
+
+/api/plan — planner (P1)
+- Returns 2–4 activities, all valid catalog ids, all age-appropriate for the given childAge.
+- Mix of categories (not all same category); monthlyTotalEstimate <= budget when a budget is given.
+
+Booking + payment (P0)
+- Creating a booking (or the "simulate payment" path) yields a unique bookingId and status becomes "paid".
+- Signature-verify logic accepts a correctly-signed test payload and rejects a tampered one (mock keys).
+
+Auth + role routing (P1)
+- parent@demo.com, coach@demo.com, ops@demo.com each log in successfully.
+- Guards: a parent token is REJECTED from /coach, /analytics, /ops; a coach token is rejected from /ops.
+- Guest can call public endpoints (search/recommend) but booking requires a parent.
+
+Dashboards data (P1)
+- Coach dashboard for coach@demo.com: totalEarnings == sum of coachEarning for that coach's PAID bookings.
+- Analytics: GMV == sum of amount (paid only); revenue == sum of dabbleFee (paid only);
+  conversion == totalBookings / searchCount; pending bookings excluded from GMV.
+- Parent "My Bookings" for parent@demo.com returns only bookings with parentEmail == parent@demo.com.
+
+Output: `npm test` runs all suites and prints a clear pass/fail summary. Do not change app behavior to
+make tests pass — if a test reveals a real bug, list it in TESTS.md instead. Keep the app running.

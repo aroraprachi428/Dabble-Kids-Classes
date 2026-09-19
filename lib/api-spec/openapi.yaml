@@ -228,8 +228,260 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /plan:
+    post:
+      operationId: planChildMonth
+      tags: [recommendations]
+      summary: Build a deterministic monthly activity plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanInput"
+      responses:
+        "200":
+          description: Planned activities
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanResponse"
+        "400":
+          description: Invalid age or insufficient budget
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/signup:
+    post:
+      operationId: signUp
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupInput"
+      responses:
+        "201":
+          description: Signed up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "400": { description: Invalid signup, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401": { description: Invalid credentials, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      responses:
+        "200":
+          description: Logged out
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401": { description: Authentication required, content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+  /parent/kids:
+    get:
+      operationId: listParentKids
+      tags: [parent]
+      responses:
+        "200": { description: Kids, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/KidProfile" } } } } }
+    post:
+      operationId: createParentKid
+      tags: [parent]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/KidProfileInput" } }
+      responses:
+        "201": { description: Kid, content: { application/json: { schema: { $ref: "#/components/schemas/KidProfile" } } } }
+  /parent/bookings:
+    get:
+      operationId: listParentBookings
+      tags: [parent]
+      responses:
+        "200": { description: Bookings, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Booking" } } } } }
+  /coach-dashboard:
+    get:
+      operationId: getCoachDashboard
+      tags: [coach]
+      responses:
+        "200": { description: Dashboard, content: { application/json: { schema: { $ref: "#/components/schemas/CoachDashboard" } } } }
+  /analytics:
+    get:
+      operationId: getAnalytics
+      tags: [analytics]
+      responses:
+        "200": { description: Deprecated employee analytics, content: { application/json: { schema: { $ref: "#/components/schemas/OpsAnalytics" } } } }
+        "403": { description: Employee role required }
+  /ops:
+    get:
+      operationId: getOpsAnalytics
+      tags: [ops]
+      responses:
+        "200": { description: Operations analytics, content: { application/json: { schema: { $ref: "#/components/schemas/OpsAnalytics" } } } }
+        "403": { description: Employee role required }
 components:
   schemas:
+    PlanInput:
+      type: object
+      required: [childAge]
+      properties:
+        childAge: { type: integer, minimum: 3, maximum: 18 }
+        budget: { type: number, exclusiveMinimum: 0 }
+        monthlyBudget: { type: number, exclusiveMinimum: 0 }
+        preferences: { type: string }
+    PlanActivity:
+      type: object
+      required: [id, title, category, reason, estimatedMonthlyPrice]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { type: string }
+        reason: { type: string }
+        estimatedMonthlyPrice: { type: number }
+    PlanResponse:
+      type: object
+      required: [childAge, monthlyTotalEstimate, activities]
+      properties:
+        childAge: { type: integer }
+        monthlyTotalEstimate: { type: number }
+        activities:
+          type: array
+          minItems: 2
+          maxItems: 4
+          items: { $ref: "#/components/schemas/PlanActivity" }
+    KidProfile:
+      type: object
+      required: [id, name, age]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        age: { type: integer, minimum: 4 }
+    KidProfileInput:
+      type: object
+      required: [name, age]
+      properties:
+        name: { type: string, minLength: 1 }
+        age: { type: integer, minimum: 4 }
+    AnalyticsSummary:
+      type: object
+      required: [periodLabel, GMV, dabbleRevenue, totalBookings, pendingBookings, activeCoaches, searches, conversion, avgBookingValue, newParentSignups, societiesLive, bookingsByCategory, bookingsByArea, bookingsOverTime, topCoaches, recentBookings]
+      properties:
+        periodLabel: { type: string }
+        bookingCount: { type: integer }
+        GMV: { type: integer }
+        dabbleRevenue: { type: integer }
+        totalBookings: { type: integer }
+        pendingBookings: { type: integer }
+        activeCoaches: { type: integer }
+        searches: { type: integer }
+        conversion: { type: number }
+        avgBookingValue: { type: number }
+        newParentSignups: { type: integer }
+        societiesLive: { type: integer }
+        bookingsByCategory: { type: array, items: { $ref: "#/components/schemas/AnalyticsSeriesPoint" } }
+        bookingsByArea: { type: array, items: { $ref: "#/components/schemas/AnalyticsSeriesPoint" } }
+        bookingsOverTime: { type: array, items: { $ref: "#/components/schemas/AnalyticsSeriesPoint" } }
+        topCoaches: { type: array, items: { $ref: "#/components/schemas/TopCoach" } }
+        recentBookings: { type: array, items: { $ref: "#/components/schemas/RecentBooking" } }
+    OpsAnalytics:
+      allOf:
+        - $ref: "#/components/schemas/AnalyticsSummary"
+    AnalyticsSeriesPoint:
+      type: object
+      required: [label, bookings, GMV]
+      properties:
+        label: { type: string }
+        bookings: { type: integer }
+        GMV: { type: integer }
+    RecentBooking:
+      type: object
+      required: [parent, child, activity, coach, amount, status, time]
+      properties:
+        parent: { type: string }
+        child: { type: string }
+        activity: { type: string }
+        coach: { type: string }
+        amount: { type: integer }
+        status: { type: string, enum: [paid, pending] }
+        time: { type: string }
+    TopCoach:
+      type: object
+      required: [coachId, coachName, bookings, seatsBooked, GMV, coachEarnings, revenue]
+      properties:
+        coachId: { type: string }
+        coachName: { type: string }
+        bookings: { type: integer }
+        seatsBooked: { type: integer }
+        GMV: { type: integer }
+        coachEarnings: { type: integer }
+        revenue: { type: integer }
+    CoachDashboard:
+      type: object
+      required: [coach, bookings, totals]
+      properties:
+        coach: { allOf: [{ $ref: "#/components/schemas/Coach" }, { nullable: true }] }
+        bookings: { type: array, items: { $ref: "#/components/schemas/Booking" } }
+        totals:
+          type: object
+          required: [bookingCount, seatsBooked, GMV, coachEarnings, revenue]
+          properties:
+            bookingCount: { type: integer }
+            seatsBooked: { type: integer }
+            GMV: { type: integer }
+            coachEarnings: { type: integer }
+            revenue: { type: integer }
+    AuthUser:
+      type: object
+      required: [id, email, name, role, linkedCoachId]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        name: { type: string }
+        role: { type: string, enum: [parent, coach, employee] }
+        linkedCoachId: { type: ["string", "null"] }
+    SignupInput:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        role: { type: string, enum: [parent, coach] }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
     HealthStatus:
       type: object
       properties:

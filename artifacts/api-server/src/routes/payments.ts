@@ -15,8 +15,11 @@ import {
   bookings,
   calculateBookingPricing,
   coaches,
+  catalogExperiences,
   type Booking,
 } from "../lib/dabble-data";
+import { requireRole } from "../middleware/auth";
+import { db, bookingsTable } from "@workspace/db";
 
 const router: IRouter = Router();
 const pendingOrders = new Map<
@@ -27,6 +30,7 @@ const pendingOrders = new Map<
     slotId: string;
     seats: number;
     expiresAt: number;
+    userId: string;
   }
 >();
 const ORDER_TTL_MS = 15 * 60 * 1000;
@@ -44,7 +48,7 @@ function purgeExpired(orderId: string) {
   return order;
 }
 
-router.post("/order", async (req, res): Promise<void> => {
+router.post("/order", requireRole("parent"), async (req, res): Promise<void> => {
   const parsed = CreatePaymentOrderBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -101,6 +105,7 @@ router.post("/order", async (req, res): Promise<void> => {
     slotId,
     seats,
     expiresAt: Date.now() + ORDER_TTL_MS,
+    userId: req.user!.id,
   });
   res.json(
     CreatePaymentOrderResponse.parse({
@@ -118,7 +123,7 @@ router.post("/order", async (req, res): Promise<void> => {
   );
 });
 
-router.post("/verify", (req, res): void => {
+router.post("/verify", requireRole("parent"), async (req, res): Promise<void> => {
   const parsed = VerifyPaymentBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -128,6 +133,10 @@ router.post("/verify", (req, res): void => {
   const pending = purgeExpired(data.orderId);
   if (!pending) {
     res.status(404).json({ error: "Payment order not found or expired" });
+    return;
+  }
+  if (pending.userId !== req.user!.id) {
+    res.status(403).json({ error: "Payment order belongs to another user" });
     return;
   }
   if (
@@ -181,6 +190,16 @@ router.post("/verify", (req, res): void => {
   };
   pendingOrders.delete(data.orderId);
   bookings.set(id, booking);
+  await db.insert(bookingsTable).values({
+    id, parentUserId: req.user!.id, coachId: booking.coachId, slotId: booking.slotId,
+    childName: booking.childName, childAge: booking.childAge, parentName: booking.parentName,
+    parentEmail: booking.parentEmail, parentPhone: booking.parentPhone, seats: booking.seats,
+    trialFee: booking.trialFee, serviceFee: booking.serviceFee, coachFee: booking.coachFee,
+    dabbleFee: booking.dabbleFee, total: booking.total, coachSnapshot: coach, slotSnapshot: slot,
+    amount: booking.coachFee, coachEarning: booking.coachFee, category: catalogExperiences.find((item) => item.id === coach.id)?.category ?? coach.activity, area: coach.area,
+    status: "paid", slotDate: slot.date, slotTime: slot.time,
+    paymentOrderId: data.orderId, paymentId: data.paymentId,
+  });
   res.status(201).json(VerifyPaymentResponse.parse(booking));
 });
 

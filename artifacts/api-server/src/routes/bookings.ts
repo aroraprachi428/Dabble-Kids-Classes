@@ -6,11 +6,14 @@ import {
   GetBookingParams,
   GetBookingResponse,
 } from "@workspace/api-zod";
-import { bookings, coaches, calculateBookingPricing, type Booking } from "../lib/dabble-data";
+import { bookings, coaches, catalogExperiences, calculateBookingPricing, type Booking } from "../lib/dabble-data";
+import { requireRole } from "../middleware/auth";
+import { db, bookingsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-router.post("/bookings", (req, res): void => {
+router.post("/bookings", requireRole("parent"), async (req, res): Promise<void> => {
   const parsed = CreateBookingBody.safeParse(req.body);
   if (!parsed.success) {
     req.log.warn({ errors: parsed.error.message }, "Invalid trial booking");
@@ -43,21 +46,44 @@ router.post("/bookings", (req, res): void => {
   };
 
   bookings.set(id, booking);
+  await db.insert(bookingsTable).values({
+    id, parentUserId: req.user!.id, coachId: booking.coachId, slotId: booking.slotId,
+    childName: booking.childName, childAge: booking.childAge, parentName: booking.parentName,
+    parentEmail: booking.parentEmail, parentPhone: booking.parentPhone, seats: booking.seats,
+    trialFee: booking.trialFee, serviceFee: booking.serviceFee, coachFee: booking.coachFee,
+    dabbleFee: booking.dabbleFee, total: booking.total, coachSnapshot: coach, slotSnapshot: slot,
+    amount: booking.coachFee, coachEarning: booking.coachFee, category: catalogExperiences.find((item) => item.id === coach.id)?.category ?? coach.activity, area: coach.area,
+    status: "paid", slotDate: slot.date, slotTime: slot.time,
+  });
   req.log.info({ bookingId: id, coachId: coach.id }, "Trial booking created");
   res.status(201).json(CreateBookingResponse.parse(booking));
 });
 
-router.get("/bookings/:bookingId", (req, res): void => {
+router.get("/bookings/:bookingId", requireRole("parent", "coach"), async (req, res): Promise<void> => {
   const parsed = GetBookingParams.safeParse(req.params);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
 
-  const booking = bookings.get(parsed.data.bookingId);
+  let booking = bookings.get(parsed.data.bookingId);
+  if (!booking) {
+    const [record] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, parsed.data.bookingId));
+    if (record) {
+      const coach = coaches.find((item) => item.id === record.coachId);
+      if (coach && (req.user!.role === "coach" ? req.user!.linkedCoachId === record.coachId : req.user!.id === record.parentUserId)) {
+        booking = { ...record, coach, slot: record.slotSnapshot as Booking["slot"], createdAt: record.createdAt.toISOString() };
+      }
+    }
+  }
   if (!booking) {
     res.status(404).json({ error: "Booking not found" });
     return;
+  }
+  const [ownership] = await db.select({ parentUserId: bookingsTable.parentUserId, coachId: bookingsTable.coachId })
+    .from(bookingsTable).where(eq(bookingsTable.id, parsed.data.bookingId));
+  if (ownership && (req.user!.role === "parent" ? ownership.parentUserId !== req.user!.id : ownership.coachId !== req.user!.linkedCoachId)) {
+    res.status(404).json({ error: "Booking not found" }); return;
   }
 
   res.json(GetBookingResponse.parse(booking));

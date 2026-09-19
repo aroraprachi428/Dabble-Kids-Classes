@@ -8,6 +8,8 @@ import {
   coaches,
   type Coach,
 } from "../lib/dabble-data";
+import { db, platformMetricsTable } from "@workspace/db";
+import { eq, sql } from "drizzle-orm";
 
 type Intent = {
   activity: string;
@@ -408,6 +410,9 @@ router.post("/recommend", async (req, res): Promise<void> => {
   }
 
   const { query } = parsed.data;
+  await db.update(platformMetricsTable)
+    .set({ searchCount: sql`${platformMetricsTable.searchCount} + 1`, updatedAt: new Date() })
+    .where(eq(platformMetricsTable.id, 1));
 
   try {
     let recommendations: RecommendationResponse;

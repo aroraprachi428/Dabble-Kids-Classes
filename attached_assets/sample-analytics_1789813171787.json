@@ -1,0 +1,9 @@
+{
+  "_notes": "Platform-level seed inputs for the App/Ops Analytics Dashboard that CANNOT be derived from bookings. Everything else (GMV, Dabble revenue, bookings by category/area, top coaches, bookings over time) must be COMPUTED from sample-bookings.json so the numbers always reconcile. searchCount powers the search→booking conversion metric.",
+  "periodLabel": "Last 30 days",
+  "searchCount": 342,
+  "newParentSignups": 128,
+  "activeCoaches": 15,
+  "societiesLive": 3,
+  "derivedFromBookingsNote": "Compute these from sample-bookings.json — do NOT hardcode: totalBookings, GMV (sum amount), dabbleRevenue (sum dabbleFee), avgBookingValue, bookingsByCategory, bookingsByArea, bookingsOverTime, topCoaches (by GMV), conversionRate = totalBookings / searchCount."
+}

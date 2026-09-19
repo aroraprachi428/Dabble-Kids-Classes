@@ -6,19 +6,37 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './analyticsSeriesPoint';
+export * from './analyticsSummary';
+export * from './authUser';
+export * from './authUserRole';
 export * from './booking';
 export * from './bookingInput';
 export * from './coach';
+export * from './coachDashboard';
+export * from './coachDashboardTotals';
 export * from './errorResponse';
 export * from './healthStatus';
+export * from './kidProfile';
+export * from './kidProfileInput';
 export * from './listCoachesParams';
+export * from './loginInput';
+export * from './opsAnalytics';
 export * from './paymentOrder';
 export * from './paymentOrderCurrency';
 export * from './paymentOrderInput';
 export * from './paymentOrderMode';
+export * from './planActivity';
+export * from './planInput';
+export * from './planResponse';
+export * from './recentBooking';
+export * from './recentBookingStatus';
 export * from './recommendationInput';
 export * from './recommendationIntent';
 export * from './recommendationResponse';
 export * from './recommendationResult';
+export * from './signupInput';
+export * from './signupInputRole';
+export * from './topCoach';
 export * from './trialSlot';
 export * from './verifyPaymentInput';

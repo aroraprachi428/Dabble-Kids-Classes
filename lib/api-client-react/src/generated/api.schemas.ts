@@ -5,9 +5,114 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export interface HealthStatus {
-  status: string;
+export interface PlanInput {
+  /**
+     * @minimum 3
+     * @maximum 18
+     */
+  childAge: number;
+  /** @exclusiveMinimum 0 */
+  budget?: number;
+  /** @exclusiveMinimum 0 */
+  monthlyBudget?: number;
+  preferences?: string;
 }
+
+export interface PlanActivity {
+  id: string;
+  title: string;
+  category: string;
+  reason: string;
+  estimatedMonthlyPrice: number;
+}
+
+export interface PlanResponse {
+  childAge: number;
+  monthlyTotalEstimate: number;
+  /**
+     * @minItems 2
+     * @maxItems 4
+     */
+  activities: PlanActivity[];
+}
+
+export interface KidProfile {
+  id: string;
+  name: string;
+  /** @minimum 4 */
+  age: number;
+}
+
+export interface KidProfileInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 4 */
+  age: number;
+}
+
+export interface AnalyticsSeriesPoint {
+  label: string;
+  bookings: number;
+  GMV: number;
+}
+
+export interface TopCoach {
+  coachId: string;
+  coachName: string;
+  bookings: number;
+  seatsBooked: number;
+  GMV: number;
+  coachEarnings: number;
+  revenue: number;
+}
+
+export type RecentBookingStatus = typeof RecentBookingStatus[keyof typeof RecentBookingStatus];
+
+
+export const RecentBookingStatus = {
+  paid: 'paid',
+  pending: 'pending',
+} as const;
+
+export interface RecentBooking {
+  parent: string;
+  child: string;
+  activity: string;
+  coach: string;
+  amount: number;
+  status: RecentBookingStatus;
+  time: string;
+}
+
+export interface AnalyticsSummary {
+  periodLabel: string;
+  bookingCount?: number;
+  GMV: number;
+  dabbleRevenue: number;
+  totalBookings: number;
+  pendingBookings: number;
+  activeCoaches: number;
+  searches: number;
+  conversion: number;
+  avgBookingValue: number;
+  newParentSignups: number;
+  societiesLive: number;
+  bookingsByCategory: AnalyticsSeriesPoint[];
+  bookingsByArea: AnalyticsSeriesPoint[];
+  bookingsOverTime: AnalyticsSeriesPoint[];
+  topCoaches: TopCoach[];
+  recentBookings: RecentBooking[];
+}
+
+export type OpsAnalytics = AnalyticsSummary;
+
+export type CoachDashboardTotals = {
+  bookingCount: number;
+  seatsBooked: number;
+  GMV: number;
+  coachEarnings: number;
+  revenue: number;
+};
 
 export interface TrialSlot {
   id: string;
@@ -62,6 +167,103 @@ export interface BookingInput {
      * @maximum 10
      */
   seats?: number;
+}
+
+export type Booking = BookingInput & {
+  id: string;
+  coach: Coach;
+  slot: TrialSlot;
+  trialFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
+  total: number;
+  createdAt: string;
+} & Required<Pick<BookingInput & {
+  id: string;
+  coach: Coach;
+  slot: TrialSlot;
+  trialFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
+  total: number;
+  createdAt: string;
+}, Extract<keyof (BookingInput & {
+  id: string;
+  coach: Coach;
+  slot: TrialSlot;
+  trialFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
+  total: number;
+  createdAt: string;
+}), 'serviceFee - coachFee - dabbleFee - seats'>>>;
+
+export interface CoachDashboard {
+  coach: Coach & (unknown | null);
+  bookings: Booking[];
+  totals: CoachDashboardTotals;
+}
+
+export type AuthUserRole = typeof AuthUserRole[keyof typeof AuthUserRole];
+
+
+export const AuthUserRole = {
+  parent: 'parent',
+  coach: 'coach',
+  employee: 'employee',
+} as const;
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: AuthUserRole;
+  /** @nullable */
+  linkedCoachId: string | null;
+}
+
+export type SignupInputRole = typeof SignupInputRole[keyof typeof SignupInputRole];
+
+
+export const SignupInputRole = {
+  parent: 'parent',
+  coach: 'coach',
+} as const;
+
+export interface SignupInput {
+  /** @minLength 1 */
+  name: string;
+  email: string;
+  /** @minLength 8 */
+  password: string;
+  role: SignupInputRole;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export interface HealthStatus {
+  status: string;
 }
 
 export interface PaymentOrderInput {
@@ -119,53 +321,6 @@ export type VerifyPaymentInput = BookingInput & {
   paymentId?: string;
   signature?: string;
 }, 'seats'>>;
-
-export type Booking = BookingInput & {
-  id: string;
-  coach: Coach;
-  slot: TrialSlot;
-  trialFee: number;
-  serviceFee?: number;
-  coachFee?: number;
-  dabbleFee?: number;
-  /**
-     * @minimum 1
-     * @maximum 10
-     */
-  seats?: number;
-  total: number;
-  createdAt: string;
-} & Required<Pick<BookingInput & {
-  id: string;
-  coach: Coach;
-  slot: TrialSlot;
-  trialFee: number;
-  serviceFee?: number;
-  coachFee?: number;
-  dabbleFee?: number;
-  /**
-     * @minimum 1
-     * @maximum 10
-     */
-  seats?: number;
-  total: number;
-  createdAt: string;
-}, Extract<keyof (BookingInput & {
-  id: string;
-  coach: Coach;
-  slot: TrialSlot;
-  trialFee: number;
-  serviceFee?: number;
-  coachFee?: number;
-  dabbleFee?: number;
-  /**
-     * @minimum 1
-     * @maximum 10
-     */
-  seats?: number;
-  total: number;
-  createdAt: string;
-}), 'serviceFee - coachFee - dabbleFee - seats'>>>;
 
 export interface ErrorResponse {
   error: string;

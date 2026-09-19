@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useGetCoach, TrialSlot, Coach } from "@workspace/api-client-react";
-import { Star, MapPin, Clock, ShieldCheck, CheckCircle2, ChevronRight, ArrowLeft, Heart, Share2, Info, Plus, Minus } from "lucide-react";
+import { Star, MapPin, Clock, ShieldCheck, CheckCircle2, ChevronRight, ArrowLeft, Heart, Share2, Info, Plus, Minus, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatRupee } from "@/lib/utils";
 import coachPlaceholder from "@assets/generated_images/coach_placeholder.jpg";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function CoachDetails() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { data: coach, isLoading, isError } = useGetCoach(id!);
+  const { user } = useAuth();
   
   const [selectedSlot, setSelectedSlot] = useState<TrialSlot | null>(null);
   const [seats, setSeats] = useState(1);
@@ -30,7 +32,14 @@ export default function CoachDetails() {
         slotId: selectedSlot.id,
         seats
       }));
-      setLocation('/checkout');
+      
+      if (!user) {
+        setLocation(`/login?returnTo=${encodeURIComponent("/checkout")}`);
+      } else if (user.role === 'coach') {
+        setLocation('/coach'); // Prevent coach from booking
+      } else {
+        setLocation('/checkout');
+      }
     }
   };
 
@@ -276,11 +285,11 @@ export default function CoachDetails() {
             <Button 
               size="lg" 
               className="w-full rounded-full h-16 text-lg shadow-xl shadow-primary/20 font-bold transition-transform active:scale-[0.98]"
-              disabled={!selectedSlot}
+              disabled={!selectedSlot || user?.role === 'coach'}
               onClick={handleContinue}
               data-testid="button-continue-booking"
             >
-              Book a trial {selectedSlot && <ChevronRight className="w-5 h-5 ml-1" />}
+              {user?.role === 'coach' ? "Coaches cannot book trials" : <>Book a trial {selectedSlot && <ChevronRight className="w-5 h-5 ml-1" />}</>}
             </Button>
             
             <div className="mt-6 pt-6 border-t border-border/50 space-y-3">
