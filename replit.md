@@ -33,6 +33,8 @@ Dabble helps Bangalore parents find vetted coaches and classes for their childre
 - The 41-offer Bangalore catalog comes from the supplied seed JSON and preserves its `exp-*` IDs for API, ranking, and booking flows.
 - Trial bookings are intentionally stored in memory for the MVP.
 - Recommendations prefer `ANTHROPIC_API_KEY`, fall back to `OPENAI_API_KEY`, then use validated deterministic local ranking if neither provider is available or an AI response fails.
+- Web trial checkout creates Razorpay test orders when `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are available; otherwise it uses a server-authorized simulation flow.
+- Payment pricing is server-owned: coach fee is the class price multiplied by seats, and the Dabble fee is 10%.
 
 ## Product
 
@@ -41,6 +43,7 @@ Dabble helps Bangalore parents find vetted coaches and classes for their childre
 - Trial slot selection, checkout fee breakdown, and booking confirmation
 - Native Expo navigation, haptics, safe-area handling, and keyboard-aware checkout
 - Natural-language recommendations with parsed, editable intent chips and ranked match reasons
+- Seat-aware trial checkout with Razorpay signature verification and full payment confirmation
 
 ## User preferences
 
