@@ -159,11 +159,11 @@ function CoachCard({ item, reason, matchScore, colors, onPress }: { item: Coach;
     <Image source={{ uri: item.imageUrl }} style={styles.photo} contentFit="cover" transition={150} />
     <View style={styles.cardContent}>
       <View style={styles.cardTop}><Text style={[styles.activity, { color: colors.primary }]}>{item.activity}</Text><Text style={[styles.match, { color: colors.secondaryForeground, backgroundColor: colors.secondary }]}>{Math.round(matchScore)}% match</Text></View>
-      <Text style={[styles.cardTitle, { color: colors.foreground }]}>{item.activity} class</Text>
+      <Text style={[styles.cardTitle, { color: colors.foreground }]}>{item.activity}</Text>
       <Text style={[styles.name, { color: colors.foreground }]}>{item.name}</Text>
       <Text style={[styles.venue, { color: colors.mutedForeground }]}>{item.venue} · {item.area}</Text>
-      <View style={styles.meta}><Text style={[styles.rating, { color: colors.foreground }]}>★ {item.rating.toFixed(1)}</Text><Text style={[styles.price, { color: colors.foreground }]}>₹{item.price} / trial</Text></View>
-      <Text style={[styles.slot, { color: colors.mutedForeground }]}>Next: {slot ? `${slot.day}, ${slot.label}` : 'Check availability'}</Text>
+      <View style={styles.meta}><Text style={[styles.rating, { color: colors.foreground }]}>★ {item.rating.toFixed(1)}</Text><Text style={[styles.price, { color: colors.foreground }]}>{item.priceLabel}</Text></View>
+      <Text style={[styles.slot, { color: colors.mutedForeground }]}>Next: {slot ? `${slot.day}, ${slot.time}` : 'Check availability'}</Text>
       <View style={[styles.reason, { backgroundColor: colors.accent }]}><Feather name="zap" size={14} color={colors.primary} /><Text style={[styles.reasonText, { color: colors.accentForeground }]}>{reason}</Text></View>
       <Text style={[styles.vetted, { color: colors.secondary }]}>Vetted ✓</Text>
     </View>

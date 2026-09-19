@@ -37,6 +37,12 @@ export interface Coach {
   accent: string;
   highlights: string[];
   slots: TrialSlot[];
+  sessionFormats: string[];
+  venueType: string;
+  serviceAreas: string[];
+  ageMin: number;
+  ageMax: number;
+  parentAccompanied: boolean;
 }
 
 export interface BookingInput {
@@ -47,17 +53,115 @@ export interface BookingInput {
   parentName: string;
   parentEmail: string;
   parentPhone: string;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
 }
+
+export interface PaymentOrderInput {
+  /** @minLength 1 */
+  coachId: string;
+  /** @minLength 1 */
+  slotId: string;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats: number;
+}
+
+export type PaymentOrderMode = typeof PaymentOrderMode[keyof typeof PaymentOrderMode];
+
+
+export const PaymentOrderMode = {
+  razorpay: 'razorpay',
+  simulated: 'simulated',
+} as const;
+
+export type PaymentOrderCurrency = typeof PaymentOrderCurrency[keyof typeof PaymentOrderCurrency];
+
+
+export const PaymentOrderCurrency = {
+  INR: 'INR',
+} as const;
+
+export interface PaymentOrder {
+  mode: PaymentOrderMode;
+  orderId: string;
+  keyId: string;
+  amount: number;
+  amountPaise: number;
+  currency: PaymentOrderCurrency;
+  coachFee: number;
+  dabbleFee: number;
+  total: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats: number;
+}
+
+export type VerifyPaymentInput = BookingInput & {
+  /** @minLength 1 */
+  orderId: string;
+  paymentId?: string;
+  signature?: string;
+} & Required<Pick<BookingInput & {
+  /** @minLength 1 */
+  orderId: string;
+  paymentId?: string;
+  signature?: string;
+}, 'seats'>>;
 
 export type Booking = BookingInput & {
   id: string;
   coach: Coach;
   slot: TrialSlot;
   trialFee: number;
-  serviceFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
   total: number;
   createdAt: string;
-};
+} & Required<Pick<BookingInput & {
+  id: string;
+  coach: Coach;
+  slot: TrialSlot;
+  trialFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
+  total: number;
+  createdAt: string;
+}, Extract<keyof (BookingInput & {
+  id: string;
+  coach: Coach;
+  slot: TrialSlot;
+  trialFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
+  total: number;
+  createdAt: string;
+}), 'serviceFee - coachFee - dabbleFee - seats'>>>;
 
 export interface ErrorResponse {
   error: string;
@@ -78,6 +182,10 @@ export interface RecommendationIntent {
   timeOfDay: string;
   /** @nullable */
   maxPrice: number | null;
+  society: string;
+  formatPreference: string;
+  venuePreference: string;
+  ageNote: string;
 }
 
 export interface RecommendationResult {
@@ -93,7 +201,7 @@ export interface RecommendationResult {
 export interface RecommendationResponse {
   intent: RecommendationIntent;
   /**
-     * @minItems 5
+     * @minItems 0
      * @maxItems 8
      */
   results: RecommendationResult[];

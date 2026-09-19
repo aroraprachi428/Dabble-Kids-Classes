@@ -30,7 +30,7 @@ Dabble helps Bangalore parents find vetted coaches and classes for their childre
 
 ## Architecture decisions
 
-- The coach catalog is placeholder data until the supplied JSON catalog replaces it.
+- The 41-offer Bangalore catalog comes from the supplied seed JSON and preserves its `exp-*` IDs for API, ranking, and booking flows.
 - Trial bookings are intentionally stored in memory for the MVP.
 - Recommendations prefer `ANTHROPIC_API_KEY`, fall back to `OPENAI_API_KEY`, then use validated deterministic local ranking if neither provider is available or an AI response fails.
 

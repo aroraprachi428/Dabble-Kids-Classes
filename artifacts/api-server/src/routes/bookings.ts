@@ -6,7 +6,7 @@ import {
   GetBookingParams,
   GetBookingResponse,
 } from "@workspace/api-zod";
-import { bookings, coaches, type Booking } from "../lib/dabble-data";
+import { bookings, coaches, calculateBookingPricing, type Booking } from "../lib/dabble-data";
 
 const router: IRouter = Router();
 
@@ -25,17 +25,20 @@ router.post("/bookings", (req, res): void => {
     return;
   }
 
-  const trialFee = coach.price;
-  const serviceFee = 49;
+  const seats = parsed.data.seats ?? 1;
+  const { coachFee, dabbleFee, total } = calculateBookingPricing(coach.price, seats);
   const id = `DBL-${randomBytes(3).toString("hex").toUpperCase()}`;
   const booking: Booking = {
     ...parsed.data,
+    seats,
     id,
     coach,
     slot,
-    trialFee,
-    serviceFee,
-    total: trialFee + serviceFee,
+    trialFee: coachFee,
+    serviceFee: dabbleFee,
+    coachFee,
+    dabbleFee,
+    total,
     createdAt: new Date().toISOString(),
   };
 

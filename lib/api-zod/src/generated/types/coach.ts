@@ -27,4 +27,10 @@ export interface Coach {
   accent: string;
   highlights: string[];
   slots: TrialSlot[];
+  sessionFormats: string[];
+  venueType: string;
+  serviceAreas: string[];
+  ageMin: number;
+  ageMax: number;
+  parentAccompanied: boolean;
 }

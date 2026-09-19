@@ -1,23 +1,35 @@
 import { useState } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { Search, MapPin, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
 
 const EXAMPLE_SEARCHES = [
-  "swimming for my 7-year-old near Whitefield, weekend mornings",
-  "beginner chess coach in Indiranagar",
-  "football classes in HSR Layout for 10yo"
+  "swimming for my 7-year-old",
+  "beginner chess coach",
+  "football classes"
 ];
 
 export function HeroSearch() {
   const [, setLocation] = useLocation();
   const [query, setQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      setLocation(`/results?q=${encodeURIComponent(query)}`);
+    let finalQuery = query.trim();
+    const loc = locationQuery.trim();
+    
+    if (loc) {
+      if (finalQuery) {
+        finalQuery = `${finalQuery} in ${loc}`;
+      } else {
+        finalQuery = `classes in ${loc}`;
+      }
+    }
+    
+    if (finalQuery) {
+      setLocation(`/results?q=${encodeURIComponent(finalQuery)}`);
     } else {
       setLocation(`/results`);
     }
@@ -28,55 +40,61 @@ export function HeroSearch() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col items-center px-4">
-      <div className="text-center mb-10 space-y-4">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
-          Find the perfect <span className="text-primary">coach</span> for your child
+    <div className="w-full flex flex-col items-center lg:items-start" data-testid="section-hero-search">
+      <div className="mb-10 space-y-6 text-center lg:text-left">
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
+          Discover the perfect <span className="text-primary block mt-2">coach</span> for your child
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 font-medium">
           Bangalore's most trusted marketplace for vetted kids' classes, coaches, and activities.
         </p>
       </div>
 
-      <div className="w-full relative z-10 group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-[2rem] blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-        <form onSubmit={handleSearch} className="relative flex flex-col md:flex-row items-center gap-2 bg-white p-2 rounded-3xl md:rounded-full shadow-lg border border-border">
-          <div className="flex-1 w-full flex items-center pl-4">
-            <Search className="w-6 h-6 text-muted-foreground shrink-0" />
+      <div className="w-full max-w-3xl relative z-10 group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-[2.5rem] blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+        <form onSubmit={handleSearch} className="relative flex flex-col sm:flex-row items-center gap-3 bg-white p-3 rounded-[2rem] sm:rounded-full shadow-xl shadow-primary/5 border-2 border-transparent focus-within:border-primary/20 transition-colors">
+          <div className="flex-1 w-full flex items-center pl-4 border-b sm:border-b-0 sm:border-r border-border/50 pb-2 sm:pb-0">
+            <Search className="w-6 h-6 text-primary shrink-0" />
             <Input 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. swimming for my 7-year-old near Whitefield"
-              className="border-0 shadow-none focus-visible:ring-0 text-lg md:text-xl h-14 md:h-16 px-4 bg-transparent w-full"
+              placeholder="e.g. swimming for 7yo..."
+              className="border-0 shadow-none focus-visible:ring-0 text-lg md:text-xl h-12 md:h-14 px-4 bg-transparent w-full font-medium"
+              data-testid="input-hero-search"
             />
           </div>
-          <Button type="submit" size="lg" className="w-full md:w-auto rounded-2xl md:rounded-full h-14 md:h-16 px-8 text-lg shadow-sm">
-            Search
+          <div className="flex-1 w-full flex items-center pl-4 pt-1 sm:pt-0">
+            <MapPin className="w-6 h-6 text-secondary shrink-0" />
+            <Input 
+              value={locationQuery}
+              onChange={(e) => setLocationQuery(e.target.value)}
+              placeholder="Area or society (optional)"
+              className="border-0 shadow-none focus-visible:ring-0 text-lg md:text-xl h-12 md:h-14 px-4 bg-transparent w-full font-medium"
+              data-testid="input-hero-location"
+            />
+          </div>
+          <Button type="submit" size="lg" className="w-full sm:w-auto rounded-xl sm:rounded-full h-14 md:h-16 px-8 text-lg font-bold shadow-lg shadow-primary/20 transition-transform active:scale-95" data-testid="button-hero-search">
+            Find Classes
           </Button>
         </form>
       </div>
 
-      <div className="mt-8 flex flex-col items-center">
-        <p className="text-sm font-medium text-muted-foreground mb-4 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" /> Try searching for...
+      <div className="mt-10 flex flex-col items-center lg:items-start w-full">
+        <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-secondary" /> Try searching for
         </p>
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="flex flex-wrap justify-center lg:justify-start gap-3">
           {EXAMPLE_SEARCHES.map((example, i) => (
-            <button
+             <button
               key={i}
               onClick={() => fillExample(example)}
-              className="text-sm px-4 py-2 rounded-full bg-accent text-accent-foreground hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm border border-border hover:border-primary"
+              className="text-sm font-medium px-5 py-2.5 rounded-full bg-white text-foreground hover:bg-primary hover:text-primary-foreground transition-all shadow-sm border border-border hover:border-primary hover:-translate-y-0.5 active:translate-y-0"
+              data-testid={`button-example-search-${i}`}
             >
               "{example}"
             </button>
           ))}
         </div>
-      </div>
-      
-      <div className="mt-8">
-        <Button variant="ghost" className="rounded-full text-muted-foreground hover:text-foreground">
-          Not sure? Guide me
-        </Button>
       </div>
     </div>
   );

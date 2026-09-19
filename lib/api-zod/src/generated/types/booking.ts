@@ -14,7 +14,44 @@ export type Booking = BookingInput & {
   coach: Coach;
   slot: TrialSlot;
   trialFee: number;
-  serviceFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
   total: number;
   createdAt: string;
-};
+} & Required<Pick<BookingInput & {
+  id: string;
+  coach: Coach;
+  slot: TrialSlot;
+  trialFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
+  total: number;
+  createdAt: string;
+}, Extract<keyof (BookingInput & {
+  id: string;
+  coach: Coach;
+  slot: TrialSlot;
+  trialFee: number;
+  serviceFee?: number;
+  coachFee?: number;
+  dabbleFee?: number;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  seats?: number;
+  total: number;
+  createdAt: string;
+}), 'serviceFee - coachFee - dabbleFee - seats'>>>;

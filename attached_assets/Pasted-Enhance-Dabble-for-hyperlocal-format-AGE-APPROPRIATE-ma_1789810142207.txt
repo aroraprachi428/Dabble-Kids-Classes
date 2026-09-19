@@ -1,0 +1,33 @@
+Enhance Dabble for hyperlocal + format + AGE-APPROPRIATE matching.
+
+1) DATA: Add to every catalog item:
+   - sessionFormats: array from ["private","group"]
+   - venueType: "comes_to_your_society" | "at_studio" | "online"
+   - serviceAreas: nearby Bangalore neighborhoods covered
+   - ageMin, ageMax: the class's suitable age window (integers)
+   - parentAccompanied: boolean (true for very young / toddler classes)
+   Keep values realistic per activity. Ensure there are at least 3 offers suitable for VERY YOUNG
+   kids (ages 3-5) — e.g. toddler swim/water-play, music & movement, play-based art, little-movers
+   dance — with parentAccompanied=true. Never assign unsafe activities (MMA, boxing, gym/strength,
+   squash) an ageMin below ~10.
+
+2) SEARCH INPUT: Hero has an optional "Your area or society" field. The AI extracts from the query:
+   childAge (number), area, society, formatPreference, venuePreference.
+
+3) INTENT + RANKING in /api/recommend:
+   - HARD RULE: only recommend offers where ageMin <= childAge <= ageMax. Never recommend an offer
+     outside the child's age window, and never suggest age-inappropriate/unsafe activities for the age.
+   - If NO offer fits the exact age (common for 3-4 year olds), do NOT force-fit: return the closest
+     age-appropriate options and set intent.ageNote to a friendly message like "Most classes start at
+     4 — here are the best options as your child grows into them / that accept younger kids."
+   - Rank by: age-appropriateness (and parentAccompanied for very young) > proximity to area/society
+     > format/venue match. The AI "reason" MUST mention age-fit (e.g. "perfect for a 3-year-old —
+     parent joins in") and location.
+
+4) UI:
+   - Card shows: an age line ("Ages 3-5 · parent joins" or "Ages 6-14"), a location line (based on
+     venueType), and a format tag ("Private"/"Group"/"Private & Group").
+   - Add filter chips for Age-fit, Format, and Where; changing any re-runs the search.
+   - If intent.ageNote is set, show it as a friendly banner above the results (not an error).
+
+Keep strict-JSON + keyword-fallback. Use Gemini (gemini-2.0-flash), GEMINI_API_KEY.

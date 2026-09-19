@@ -6,17 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface BookingInput {
+export interface PaymentOrderInput {
+  /** @minLength 1 */
   coachId: string;
+  /** @minLength 1 */
   slotId: string;
-  childName: string;
-  childAge: number;
-  parentName: string;
-  parentEmail: string;
-  parentPhone: string;
   /**
      * @minimum 1
      * @maximum 10
      */
-  seats?: number;
+  seats: number;
 }

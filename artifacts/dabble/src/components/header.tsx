@@ -1,6 +1,4 @@
-import { Search, MapPin, Activity, User } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 
 export function Header() {
   const [location] = useLocation();
@@ -22,12 +20,6 @@ export function Header() {
               Find a coach
             </Link>
           )}
-          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            For coaches
-          </Link>
-          <Button variant="outline" className="rounded-full h-10 border-input bg-white shadow-sm">
-            Sign In
-          </Button>
         </nav>
       </div>
     </header>

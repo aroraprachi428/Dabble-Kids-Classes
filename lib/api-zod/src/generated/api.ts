@@ -54,7 +54,13 @@ export const ListCoachesResponseItem = zod.object({
   "date": zod.string(),
   "time": zod.string(),
   "label": zod.string()
-}))
+})),
+  "sessionFormats": zod.array(zod.string()),
+  "venueType": zod.string(),
+  "serviceAreas": zod.array(zod.string()),
+  "ageMin": zod.number().int(),
+  "ageMax": zod.number().int(),
+  "parentAccompanied": zod.boolean()
 })
 export const ListCoachesResponse = zod.array(ListCoachesResponseItem)
 
@@ -91,13 +97,23 @@ export const GetCoachResponse = zod.object({
   "date": zod.string(),
   "time": zod.string(),
   "label": zod.string()
-}))
+})),
+  "sessionFormats": zod.array(zod.string()),
+  "venueType": zod.string(),
+  "serviceAreas": zod.array(zod.string()),
+  "ageMin": zod.number().int(),
+  "ageMax": zod.number().int(),
+  "parentAccompanied": zod.boolean()
 })
 
 
 /**
  * @summary Book a trial
  */
+export const createBookingBodySeatsMax = 10;
+
+
+
 export const CreateBookingBody = zod.object({
   "coachId": zod.string(),
   "slotId": zod.string(),
@@ -105,8 +121,15 @@ export const CreateBookingBody = zod.object({
   "childAge": zod.number().int(),
   "parentName": zod.string(),
   "parentEmail": zod.string(),
-  "parentPhone": zod.string()
+  "parentPhone": zod.string(),
+  "seats": zod.number().int().min(1).max(createBookingBodySeatsMax).optional()
 })
+
+export const createBookingResponseOneSeatsMax = 10;
+
+export const createBookingResponseTwoSeatsMax = 10;
+
+
 
 export const CreateBookingResponse = zod.object({
   "coachId": zod.string(),
@@ -115,7 +138,8 @@ export const CreateBookingResponse = zod.object({
   "childAge": zod.number().int(),
   "parentName": zod.string(),
   "parentEmail": zod.string(),
-  "parentPhone": zod.string()
+  "parentPhone": zod.string(),
+  "seats": zod.number().int().min(1).max(createBookingResponseOneSeatsMax).optional()
 }).and(zod.object({
   "id": zod.string(),
   "coach": zod.object({
@@ -143,7 +167,13 @@ export const CreateBookingResponse = zod.object({
   "date": zod.string(),
   "time": zod.string(),
   "label": zod.string()
-}))
+})),
+  "sessionFormats": zod.array(zod.string()),
+  "venueType": zod.string(),
+  "serviceAreas": zod.array(zod.string()),
+  "ageMin": zod.number().int(),
+  "ageMax": zod.number().int(),
+  "parentAccompanied": zod.boolean()
 }),
   "slot": zod.object({
   "id": zod.string(),
@@ -153,7 +183,133 @@ export const CreateBookingResponse = zod.object({
   "label": zod.string()
 }),
   "trialFee": zod.number().int(),
-  "serviceFee": zod.number().int(),
+  "serviceFee": zod.number().int().optional(),
+  "coachFee": zod.number().int().optional(),
+  "dabbleFee": zod.number().int().optional(),
+  "seats": zod.number().int().min(1).max(createBookingResponseTwoSeatsMax).optional(),
+  "total": zod.number().int(),
+  "createdAt": zod.string()
+}))
+
+
+/**
+ * @summary Create a payment order
+ */
+
+
+export const createPaymentOrderBodySeatsMax = 10;
+
+
+
+export const CreatePaymentOrderBody = zod.object({
+  "coachId": zod.string().min(1),
+  "slotId": zod.string().min(1),
+  "seats": zod.number().int().min(1).max(createPaymentOrderBodySeatsMax)
+})
+
+export const createPaymentOrderResponseSeatsMax = 10;
+
+
+
+export const CreatePaymentOrderResponse = zod.object({
+  "mode": zod.enum(['razorpay', 'simulated']),
+  "orderId": zod.string(),
+  "keyId": zod.string(),
+  "amount": zod.number().int(),
+  "amountPaise": zod.number().int(),
+  "currency": zod.enum(['INR']),
+  "coachFee": zod.number().int(),
+  "dabbleFee": zod.number().int(),
+  "total": zod.number().int(),
+  "seats": zod.number().int().min(1).max(createPaymentOrderResponseSeatsMax)
+})
+
+
+/**
+ * @summary Verify a payment and create a booking
+ */
+export const verifyPaymentBodyOneSeatsMax = 10;
+
+
+
+
+export const VerifyPaymentBody = zod.object({
+  "coachId": zod.string(),
+  "slotId": zod.string(),
+  "childName": zod.string(),
+  "childAge": zod.number().int(),
+  "parentName": zod.string(),
+  "parentEmail": zod.string(),
+  "parentPhone": zod.string(),
+  "seats": zod.number().int().min(1).max(verifyPaymentBodyOneSeatsMax)
+}).and(zod.object({
+  "orderId": zod.string().min(1),
+  "paymentId": zod.string().optional(),
+  "signature": zod.string().optional()
+}))
+
+export const verifyPaymentResponseOneSeatsMax = 10;
+
+export const verifyPaymentResponseTwoSeatsMax = 10;
+
+
+
+export const VerifyPaymentResponse = zod.object({
+  "coachId": zod.string(),
+  "slotId": zod.string(),
+  "childName": zod.string(),
+  "childAge": zod.number().int(),
+  "parentName": zod.string(),
+  "parentEmail": zod.string(),
+  "parentPhone": zod.string(),
+  "seats": zod.number().int().min(1).max(verifyPaymentResponseOneSeatsMax).optional()
+}).and(zod.object({
+  "id": zod.string(),
+  "coach": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "activity": zod.string(),
+  "venue": zod.string(),
+  "area": zod.string(),
+  "distance": zod.string(),
+  "rating": zod.number(),
+  "reviews": zod.number().int(),
+  "price": zod.number().int(),
+  "priceLabel": zod.string(),
+  "ageRange": zod.string(),
+  "experience": zod.string(),
+  "description": zod.string(),
+  "verified": zod.boolean(),
+  "trialAvailable": zod.boolean(),
+  "imageUrl": zod.string(),
+  "accent": zod.string(),
+  "highlights": zod.array(zod.string()),
+  "slots": zod.array(zod.object({
+  "id": zod.string(),
+  "day": zod.string(),
+  "date": zod.string(),
+  "time": zod.string(),
+  "label": zod.string()
+})),
+  "sessionFormats": zod.array(zod.string()),
+  "venueType": zod.string(),
+  "serviceAreas": zod.array(zod.string()),
+  "ageMin": zod.number().int(),
+  "ageMax": zod.number().int(),
+  "parentAccompanied": zod.boolean()
+}),
+  "slot": zod.object({
+  "id": zod.string(),
+  "day": zod.string(),
+  "date": zod.string(),
+  "time": zod.string(),
+  "label": zod.string()
+}),
+  "trialFee": zod.number().int(),
+  "serviceFee": zod.number().int().optional(),
+  "coachFee": zod.number().int().optional(),
+  "dabbleFee": zod.number().int().optional(),
+  "seats": zod.number().int().min(1).max(verifyPaymentResponseTwoSeatsMax).optional(),
   "total": zod.number().int(),
   "createdAt": zod.string()
 }))
@@ -166,6 +322,12 @@ export const GetBookingParams = zod.object({
   "bookingId": zod.coerce.string()
 })
 
+export const getBookingResponseOneSeatsMax = 10;
+
+export const getBookingResponseTwoSeatsMax = 10;
+
+
+
 export const GetBookingResponse = zod.object({
   "coachId": zod.string(),
   "slotId": zod.string(),
@@ -173,7 +335,8 @@ export const GetBookingResponse = zod.object({
   "childAge": zod.number().int(),
   "parentName": zod.string(),
   "parentEmail": zod.string(),
-  "parentPhone": zod.string()
+  "parentPhone": zod.string(),
+  "seats": zod.number().int().min(1).max(getBookingResponseOneSeatsMax).optional()
 }).and(zod.object({
   "id": zod.string(),
   "coach": zod.object({
@@ -201,7 +364,13 @@ export const GetBookingResponse = zod.object({
   "date": zod.string(),
   "time": zod.string(),
   "label": zod.string()
-}))
+})),
+  "sessionFormats": zod.array(zod.string()),
+  "venueType": zod.string(),
+  "serviceAreas": zod.array(zod.string()),
+  "ageMin": zod.number().int(),
+  "ageMax": zod.number().int(),
+  "parentAccompanied": zod.boolean()
 }),
   "slot": zod.object({
   "id": zod.string(),
@@ -211,7 +380,10 @@ export const GetBookingResponse = zod.object({
   "label": zod.string()
 }),
   "trialFee": zod.number().int(),
-  "serviceFee": zod.number().int(),
+  "serviceFee": zod.number().int().optional(),
+  "coachFee": zod.number().int().optional(),
+  "dabbleFee": zod.number().int().optional(),
+  "seats": zod.number().int().min(1).max(getBookingResponseTwoSeatsMax).optional(),
   "total": zod.number().int(),
   "createdAt": zod.string()
 }))
@@ -231,7 +403,7 @@ export const RecommendClassesBody = zod.object({
 export const recommendClassesResponseResultsItemMatchScoreMin = 0;
 export const recommendClassesResponseResultsItemMatchScoreMax = 100;
 
-export const recommendClassesResponseResultsMin = 5;
+export const recommendClassesResponseResultsMin = 0;
 export const recommendClassesResponseResultsMax = 8;
 
 
@@ -244,7 +416,11 @@ export const RecommendClassesResponse = zod.object({
   "area": zod.string(),
   "day": zod.string(),
   "timeOfDay": zod.string(),
-  "maxPrice": zod.number().int().nullable()
+  "maxPrice": zod.number().int().nullable(),
+  "society": zod.string(),
+  "formatPreference": zod.string(),
+  "venuePreference": zod.string(),
+  "ageNote": zod.string()
 }),
   "results": zod.array(zod.object({
   "id": zod.string(),

@@ -16,4 +16,8 @@ export interface RecommendationIntent {
   timeOfDay: string;
   /** @nullable */
   maxPrice: number | null;
+  society: string;
+  formatPreference: string;
+  venuePreference: string;
+  ageNote: string;
 }

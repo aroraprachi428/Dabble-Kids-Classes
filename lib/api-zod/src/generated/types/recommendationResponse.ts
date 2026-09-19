@@ -11,7 +11,7 @@ import type { RecommendationResult } from './recommendationResult';
 export interface RecommendationResponse {
   intent: RecommendationIntent;
   /**
-     * @minItems 5
+     * @minItems 0
      * @maxItems 8
      */
   results: RecommendationResult[];

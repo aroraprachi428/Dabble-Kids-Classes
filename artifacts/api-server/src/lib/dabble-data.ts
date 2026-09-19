@@ -1,3 +1,5 @@
+import seedCatalog from "../../../../attached_assets/seed-catalog_1789809370317.json";
+
 export type TrialSlot = {
   id: string;
   day: string;
@@ -26,6 +28,12 @@ export type Coach = {
   accent: string;
   highlights: string[];
   slots: TrialSlot[];
+  sessionFormats: string[];
+  venueType: "comes_to_your_society" | "at_studio" | "online";
+  serviceAreas: string[];
+  ageMin: number;
+  ageMax: number;
+  parentAccompanied: boolean;
 };
 
 export type Booking = {
@@ -37,220 +45,211 @@ export type Booking = {
   parentName: string;
   parentEmail: string;
   parentPhone: string;
+  seats: number;
   coach: Coach;
   slot: TrialSlot;
   trialFee: number;
   serviceFee: number;
+  coachFee: number;
+  dabbleFee: number;
   total: number;
   createdAt: string;
 };
 
-const portrait = (initials: string, background: string, foreground: string) =>
-  `data:image/svg+xml,${encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320"><rect width="320" height="320" rx="48" fill="${background}"/><circle cx="160" cy="126" r="62" fill="${foreground}" opacity=".22"/><path d="M66 292c9-66 47-99 94-99s85 33 94 99" fill="${foreground}" opacity=".22"/><text x="160" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="70" font-weight="700" fill="${foreground}">${initials}</text></svg>`,
-  )}`;
+export function calculateBookingPricing(price: number, seats: number) {
+  const coachFee = price * seats;
+  const dabbleFee = Math.round(coachFee * 0.1);
+  return { coachFee, dabbleFee, total: coachFee + dabbleFee };
+}
 
-const slots = (prefix: string): TrialSlot[] => [
-  {
-    id: `${prefix}-sat-9`,
-    day: "Sat",
-    date: "26 Sep",
-    time: "9:00 AM",
-    label: "Weekend morning",
-  },
-  {
-    id: `${prefix}-sun-10`,
-    day: "Sun",
-    date: "27 Sep",
-    time: "10:30 AM",
-    label: "Weekend morning",
-  },
-  {
-    id: `${prefix}-wed-17`,
-    day: "Wed",
-    date: "30 Sep",
-    time: "5:00 PM",
-    label: "Weekday evening",
-  },
+export type CatalogExperience = {
+  id: string;
+  title: string;
+  category: string;
+  coachName: string;
+  studio: string;
+  area: string;
+  nearSociety: string;
+  price: number;
+  priceUnit: string;
+  durationMins: number;
+  days: string[];
+  slots: string[];
+  groupType: string;
+  beginnerFriendly: boolean;
+  trialAvailable: boolean;
+  vetted: boolean;
+  rating: number;
+  spotsLeft: number;
+  vibeTags: string[];
+  imageQuery: string;
+  description: string;
+  sessionFormats: string[];
+  venueType: "comes_to_your_society" | "at_studio" | "online";
+  serviceAreas: string[];
+  ageMin: number;
+  ageMax: number;
+  parentAccompanied: boolean;
+};
+
+const serviceAreaMap: Record<string, string[]> = {
+  Whitefield: ["Whitefield", "Marathahalli", "Brookefield"],
+  "Sarjapur Road": ["Sarjapur Road", "Bellandur", "HSR Layout"],
+  Bellandur: ["Bellandur", "Sarjapur Road", "HSR Layout"],
+  "HSR Layout": ["HSR Layout", "Bellandur", "Koramangala"],
+  Koramangala: ["Koramangala", "Indiranagar", "HSR Layout"],
+  Indiranagar: ["Indiranagar", "Koramangala", "Domlur"],
+  Jayanagar: ["Jayanagar", "JP Nagar", "Basavanagudi"],
+};
+
+function enrichExperience(
+  experience: Omit<CatalogExperience, keyof {
+    sessionFormats: string[];
+    venueType: string;
+    serviceAreas: string[];
+    ageMin: number;
+    ageMax: number;
+    parentAccompanied: boolean;
+  }>,
+): CatalogExperience {
+  const title = experience.title.toLowerCase();
+  const ageMatch = experience.title.match(/age\s+(\d+)\s*-\s*(\d+)/i);
+  const adult = /adult|women|marathon|personal training|strength|hiit|boxing|mma|vinyasa|baking|cooking|pottery|calligraphy|spanish|photography|meditation/i.test(title);
+  const unsafe = /mma|boxing|gym|strength|squash|hiit/i.test(title);
+  const ageMin = ageMatch ? Number(ageMatch[1]) : unsafe ? 10 : adult ? 18 : 6;
+  const ageMax = ageMatch ? Number(ageMatch[2]) : adult ? 99 : 16;
+  const child = /kids|children|junior|little|age \d/i.test(title);
+  return {
+    ...experience,
+    sessionFormats: experience.groupType === "solo" ? ["private", "group"] : ["group", "private"],
+    venueType: child && ["Swimming", "Dance", "Music"].includes(experience.category)
+      ? "comes_to_your_society"
+      : "at_studio",
+    serviceAreas: serviceAreaMap[experience.area] ?? [experience.area],
+    ageMin,
+    ageMax,
+    parentAccompanied: false,
+  };
+}
+
+const rawCatalog = seedCatalog.experiences as unknown as Array<
+  Omit<CatalogExperience, "sessionFormats" | "venueType" | "serviceAreas" | "ageMin" | "ageMax" | "parentAccompanied">
+>;
+
+const veryYoungOffers: CatalogExperience[] = [
+  ["exp-042", "Parent & Toddler Swim Water Play", "Swimming", "Coach Kavya N.", "Tiny Tides", "Bellandur", "Central Park", 650, "per session", 40, ["Tue", "Thu", "Sat"], ["09:00", "10:00"], "social", "water play"],
+  ["exp-043", "Music & Movement for Toddlers", "Music", "Coach Ritu S.", "Bumblebee Music", "Whitefield", "Palm Meadows", 450, "per session", 45, ["Wed", "Sat"], ["10:00", "11:30"], "social", "music movement"],
+  ["exp-044", "Play-Based Art for Little Creators", "Painting", "Coach Nandini P.", "Little Picasso", "HSR Layout", "Adarsh Palm Retreat", 500, "per session", 45, ["Sat", "Sun"], ["10:00", "11:30"], "social", "play art"],
+  ["exp-045", "Little Movers Dance & Rhythm", "Dance", "Coach Ananya R.", "Happy Feet Juniors", "Sarjapur Road", "Gopalan Grandeur", 500, "per session", 45, ["Sat", "Sun"], ["10:00", "11:30"], "social", "toddler dance"],
+  ["exp-046", "Toddler Nature & Sensory Play", "Workshops", "Coach Aditi K.", "Nest Playhouse", "Koramangala", "Sobha Dahlia", 400, "per session", 45, ["Sat", "Sun"], ["09:30", "11:00"], "social", "sensory play"],
+].map((entry) => {
+  const [id, title, category, coachName, studio, area, nearSociety, price, priceUnit, durationMins, days, slots, groupType, tag] = entry as [
+    string, string, string, string, string, string, string, number, string, number, string[], string[], string, string
+  ];
+  return enrichExperience({
+    id, title, category, coachName, studio, area, nearSociety, price, priceUnit,
+    durationMins, days, slots, groupType, beginnerFriendly: true, trialAvailable: true,
+    vetted: true, rating: 4.9, spotsLeft: 6, vibeTags: ["kids", "safe", "parent-accompanied", tag],
+    imageQuery: title, description: "A gentle, play-led session designed for toddlers with a parent or trusted adult participating.",
+  } as never);
+})
+.map((item) => ({ ...item, ageMin: 3, ageMax: 5, parentAccompanied: true, venueType: "comes_to_your_society" as const }));
+
+export const catalogExperiences: CatalogExperience[] = [
+  ...rawCatalog.map(enrichExperience),
+  ...veryYoungOffers,
 ];
 
-export const coaches: Coach[] = [
-  {
-    id: "aqua-anjali",
-    name: "Anjali Rao",
-    activity: "Swimming",
-    venue: "Fitso Seals",
-    area: "Whitefield",
-    distance: "1.8 km away",
-    rating: 4.9,
-    reviews: 84,
-    price: 499,
-    priceLabel: "₹499 trial",
-    ageRange: "Ages 5–12",
-    experience: "9 years coaching",
-    description:
-      "Patient, safety-first swimming lessons that help beginners feel comfortable in the water before building strong technique.",
-    verified: true,
-    trialAvailable: true,
-    imageUrl: portrait("AR", "#FFE2D8", "#C7553D"),
-    accent: "coral",
-    highlights: ["CPR certified", "Beginner specialist", "Small batches"],
-    slots: slots("aqua"),
-  },
-  {
-    id: "ace-rohan",
-    name: "Rohan Menon",
-    activity: "Tennis",
-    venue: "Palm Meadows Club",
-    area: "Whitefield",
-    distance: "2.4 km away",
-    rating: 4.8,
-    reviews: 61,
-    price: 599,
-    priceLabel: "₹599 trial",
-    ageRange: "Ages 6–14",
-    experience: "11 years coaching",
-    description:
-      "High-energy tennis fundamentals with age-appropriate drills, movement games, and a steady focus on confidence.",
-    verified: true,
-    trialAvailable: true,
-    imageUrl: portrait("RM", "#D9F2EC", "#26766D"),
-    accent: "teal",
-    highlights: ["AITA certified", "Equipment provided", "Parent updates"],
-    slots: slots("ace"),
-  },
-  {
-    id: "glide-meera",
-    name: "Meera Iyer",
-    activity: "Skating",
-    venue: "Decathlon Arena",
-    area: "Sarjapur Road",
-    distance: "3.1 km away",
-    rating: 4.9,
-    reviews: 102,
-    price: 399,
-    priceLabel: "₹399 trial",
-    ageRange: "Ages 4–11",
-    experience: "8 years coaching",
-    description:
-      "Playful skating sessions that build balance, braking, and confidence in a carefully supervised environment.",
-    verified: true,
-    trialAvailable: true,
-    imageUrl: portrait("MI", "#FFF0C7", "#9B651B"),
-    accent: "amber",
-    highlights: ["Safety gear included", "Beginner friendly", "Max 8 children"],
-    slots: slots("glide"),
-  },
-  {
-    id: "checkmate-vikram",
-    name: "Vikram Shah",
-    activity: "Chess",
-    venue: "Mindspace Academy",
-    area: "Indiranagar",
-    distance: "1.2 km away",
-    rating: 4.8,
-    reviews: 47,
-    price: 299,
-    priceLabel: "₹299 trial",
-    ageRange: "Ages 6–15",
-    experience: "12 years coaching",
-    description:
-      "Story-led chess lessons that make strategy approachable while strengthening patience, focus, and independent thinking.",
-    verified: true,
-    trialAvailable: true,
-    imageUrl: portrait("VS", "#E7E1FA", "#5F4B9A"),
-    accent: "violet",
-    highlights: ["FIDE rated", "Progress reports", "Puzzle-based learning"],
-    slots: slots("checkmate"),
-  },
-  {
-    id: "rhythm-nisha",
-    name: "Nisha Kapoor",
-    activity: "Dance",
-    venue: "The Movement Studio",
-    area: "Koramangala",
-    distance: "2.0 km away",
-    rating: 4.9,
-    reviews: 76,
-    price: 449,
-    priceLabel: "₹449 trial",
-    ageRange: "Ages 4–13",
-    experience: "10 years coaching",
-    description:
-      "Joyful contemporary and Bollywood dance classes where children learn rhythm, coordination, and stage confidence.",
-    verified: true,
-    trialAvailable: true,
-    imageUrl: portrait("NK", "#FFE0EC", "#A83F68"),
-    accent: "rose",
-    highlights: ["Performance opportunities", "Age-based groups", "Friendly studio"],
-    slots: slots("rhythm"),
-  },
-  {
-    id: "sur-taal-arjun",
-    name: "Arjun Bhat",
-    activity: "Music",
-    venue: "Octave Music School",
-    area: "Jayanagar",
-    distance: "1.6 km away",
-    rating: 4.7,
-    reviews: 39,
-    price: 499,
-    priceLabel: "₹499 trial",
-    ageRange: "Ages 7–16",
-    experience: "14 years teaching",
-    description:
-      "Warm, structured guitar and keyboard lessons with a balance of fundamentals and songs children are excited to play.",
-    verified: true,
-    trialAvailable: true,
-    imageUrl: portrait("AB", "#DDEBFF", "#315C91"),
-    accent: "blue",
-    highlights: ["Trinity trained", "Instruments available", "One-to-one options"],
-    slots: slots("sur"),
-  },
-  {
-    id: "goal-pradeep",
-    name: "Pradeep Kumar",
-    activity: "Football",
-    venue: "Play Arena",
-    area: "Bellandur",
-    distance: "2.7 km away",
-    rating: 4.8,
-    reviews: 93,
-    price: 399,
-    priceLabel: "₹399 trial",
-    ageRange: "Ages 5–14",
-    experience: "9 years coaching",
-    description:
-      "Inclusive football coaching that develops ball skills, teamwork, fitness, and good sporting habits.",
-    verified: true,
-    trialAvailable: true,
-    imageUrl: portrait("PK", "#DDF3D7", "#3B7630"),
-    accent: "green",
-    highlights: ["AIFF licensed", "All skill levels", "Structured assessments"],
-    slots: slots("goal"),
-  },
-  {
-    id: "code-kavya",
-    name: "Kavya Narayan",
-    activity: "Coding",
-    venue: "Dabble Learning Hub",
-    area: "HSR Layout",
-    distance: "1.4 km away",
-    rating: 4.9,
-    reviews: 58,
-    price: 549,
-    priceLabel: "₹549 trial",
-    ageRange: "Ages 8–16",
-    experience: "7 years teaching",
-    description:
-      "Project-based coding sessions where children create games and stories while learning logic without rote memorisation.",
-    verified: true,
-    trialAvailable: true,
-    imageUrl: portrait("KN", "#D8F2F0", "#236F6A"),
-    accent: "teal",
-    highlights: ["Project based", "No prior coding needed", "Take-home project"],
-    slots: slots("code"),
-  },
-];
+const categoryPhotos: Record<string, string> = {
+  Swimming:
+    "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=900&q=80",
+  Tennis:
+    "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=900&q=80",
+  Football:
+    "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=900&q=80",
+  Dance:
+    "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=900&q=80",
+  Music:
+    "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=900&q=80",
+  Painting:
+    "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=900&q=80",
+  Workshops:
+    "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80",
+};
+
+const fallbackPhoto =
+  "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80";
+
+function ageRangeFor(experience: CatalogExperience) {
+  const match = experience.title.match(/Age\s+(\d+)\s*-\s*(\d+)/i);
+  return match ? `Ages ${match[1]}–${match[2]}` : "All ages";
+}
+
+function slotLabel(time: string) {
+  const hour = Number(time.split(":")[0]);
+  if (hour < 12) return "Morning";
+  if (hour < 17) return "Afternoon";
+  return "Evening";
+}
+
+function displayTime(time: string) {
+  const [hourText, minute] = time.split(":");
+  const hour = Number(hourText);
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${minute} ${suffix}`;
+}
+
+function buildSlots(experience: CatalogExperience): TrialSlot[] {
+  const slots: TrialSlot[] = [];
+  for (const day of experience.days) {
+    for (const time of experience.slots) {
+      slots.push({
+        id: `${experience.id}-${day.toLowerCase()}-${time.replace(":", "")}`,
+        day,
+        date: "Next available",
+        time: displayTime(time),
+        label: `${day} ${slotLabel(time).toLowerCase()}`,
+      });
+    }
+  }
+  return slots;
+}
+
+export const coaches: Coach[] = catalogExperiences.map(
+  (experience, index) => ({
+    id: experience.id,
+    name: experience.coachName,
+    activity: experience.title,
+    venue: experience.studio,
+    area: experience.area,
+    distance: `Near ${experience.nearSociety}`,
+    rating: experience.rating,
+    reviews: 24 + ((index * 17) % 89),
+    price: experience.price,
+    priceLabel: `₹${experience.price} ${experience.priceUnit}`,
+    ageRange: ageRangeFor(experience),
+    experience: `${experience.durationMins} min · ${experience.groupType}`,
+    description: experience.description,
+    verified: experience.vetted,
+    trialAvailable: experience.trialAvailable,
+    imageUrl: categoryPhotos[experience.category] ?? fallbackPhoto,
+    accent: ["coral", "teal", "amber", "violet", "rose", "blue", "green"][
+      index % 7
+    ],
+    highlights: [
+      experience.category,
+      ...experience.vibeTags,
+      `${experience.spotsLeft} spots left`,
+    ],
+    slots: buildSlots(experience),
+    sessionFormats: experience.sessionFormats,
+    venueType: experience.venueType,
+    serviceAreas: experience.serviceAreas,
+    ageMin: experience.ageMin,
+    ageMax: experience.ageMax,
+    parentAccompanied: experience.parentAccompanied,
+  }),
+);
 
 export const bookings = new Map<string, Booking>();

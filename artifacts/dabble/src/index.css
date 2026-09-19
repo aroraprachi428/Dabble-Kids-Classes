@@ -47,7 +47,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-3xl: calc(var(--radius) + 16px);
   --radius-full: 9999px;
 }
 
@@ -61,19 +61,19 @@
   /* Background - warm off-white */
   --background: 30 20% 98%;
   --foreground: 220 20% 15%;
-  --border: 30 10% 90%;
+  --border: 30 15% 90%;
 
   /* Cards */
   --card: 0 0% 100%;
   --card-foreground: 220 20% 15%;
-  --card-border: 30 10% 90%;
+  --card-border: 30 15% 90%;
 
   /* Popovers */
   --popover: 0 0% 100%;
   --popover-foreground: 220 20% 15%;
-  --popover-border: 30 10% 90%;
+  --popover-border: 30 15% 90%;
 
-  /* Primary - Warm Coral / Amber */
+  /* Primary - Warm Coral */
   --primary: 15 85% 55%;
   --primary-foreground: 0 0% 100%;
 
@@ -82,11 +82,11 @@
   --secondary-foreground: 0 0% 100%;
 
   /* Muted */
-  --muted: 30 15% 95%;
+  --muted: 30 20% 95%;
   --muted-foreground: 220 15% 45%;
 
   /* Accent */
-  --accent: 30 20% 92%;
+  --accent: 30 25% 92%;
   --accent-foreground: 220 20% 15%;
 
   /* Destructive */
@@ -94,32 +94,16 @@
   --destructive-foreground: 0 0% 100%;
 
   /* Inputs */
-  --input: 30 10% 85%;
+  --input: 30 15% 85%;
   --ring: 15 85% 55%;
 
   /* Radius & Font */
   --app-font-sans: 'Plus Jakarta Sans', sans-serif;
-  --radius: 1rem; /* Very rounded corners */
+  --radius: 1.25rem;
 
-  /* Soft playful shadows */
-  --shadow-2xs: 0px 2px 0px 0px hsl(15 85% 55% / 0.05);
-  --shadow-xs: 0px 2px 0px 0px hsl(15 85% 55% / 0.05);
-  --shadow-sm:
-    0px 2px 0px 0px hsl(15 85% 55% / 0.05),
-    0px 1px 2px -1px hsl(15 85% 55% / 0.05);
-  --shadow:
-    0px 4px 12px 0px hsl(220 20% 15% / 0.05),
-    0px 1px 2px -1px hsl(220 20% 15% / 0.05);
-  --shadow-md:
-    0px 6px 16px 0px hsl(220 20% 15% / 0.06),
-    0px 2px 4px -1px hsl(220 20% 15% / 0.05);
-  --shadow-lg:
-    0px 12px 24px 0px hsl(220 20% 15% / 0.08),
-    0px 4px 6px -1px hsl(220 20% 15% / 0.05);
-  --shadow-xl:
-    0px 20px 32px 0px hsl(220 20% 15% / 0.1),
-    0px 8px 10px -1px hsl(220 20% 15% / 0.05);
-  --shadow-2xl: 0px 24px 48px 0px hsl(220 20% 15% / 0.12);
+  --shadow-sm: 0 2px 8px -2px rgba(230, 115, 60, 0.08);
+  --shadow-md: 0 8px 24px -4px rgba(230, 115, 60, 0.12);
+  --shadow-lg: 0 16px 32px -8px rgba(230, 115, 60, 0.15);
 
   --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
@@ -129,27 +113,27 @@
 }
 
 .dark {
-  /* No dark mode needed, default to light settings if forced */
+  /* Default to light settings if forced, app is light-mode intended */
   --background: 30 20% 98%;
   --foreground: 220 20% 15%;
-  --border: 30 10% 90%;
+  --border: 30 15% 90%;
   --card: 0 0% 100%;
   --card-foreground: 220 20% 15%;
-  --card-border: 30 10% 90%;
+  --card-border: 30 15% 90%;
   --popover: 0 0% 100%;
   --popover-foreground: 220 20% 15%;
-  --popover-border: 30 10% 90%;
+  --popover-border: 30 15% 90%;
   --primary: 15 85% 55%;
   --primary-foreground: 0 0% 100%;
   --secondary: 175 45% 40%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 30 15% 95%;
+  --muted: 30 20% 95%;
   --muted-foreground: 220 15% 45%;
-  --accent: 30 20% 92%;
+  --accent: 30 25% 92%;
   --accent-foreground: 220 20% 15%;
   --destructive: 0 70% 50%;
   --destructive-foreground: 0 0% 100%;
-  --input: 30 10% 85%;
+  --input: 30 15% 85%;
   --ring: 15 85% 55%;
 }
 

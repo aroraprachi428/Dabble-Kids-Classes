@@ -119,6 +119,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /order:
+    post:
+      operationId: createPaymentOrder
+      tags: [bookings]
+      summary: Create a payment order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentOrderInput"
+      responses:
+        "200":
+          description: Payment order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentOrder"
+        "400":
+          description: Invalid payment order request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Payment provider error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /verify:
+    post:
+      operationId: verifyPayment
+      tags: [bookings]
+      summary: Verify a payment and create a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyPaymentInput"
+      responses:
+        "201":
+          description: Booking created after payment verification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          description: Invalid payment or booking request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Payment order not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /bookings/{bookingId}:
     get:
       operationId: getBooking
@@ -222,6 +282,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TrialSlot"
+        sessionFormats:
+          type: array
+          items:
+            type: string
+        venueType:
+          type: string
+        serviceAreas:
+          type: array
+          items:
+            type: string
+        ageMin:
+          type: integer
+        ageMax:
+          type: integer
+        parentAccompanied:
+          type: boolean
       required:
         - id
         - name
@@ -242,6 +318,12 @@ components:
         - accent
         - highlights
         - slots
+        - sessionFormats
+        - venueType
+        - serviceAreas
+        - ageMin
+        - ageMax
+        - parentAccompanied
     TrialSlot:
       type: object
       properties:
@@ -278,6 +360,10 @@ components:
           type: string
         parentPhone:
           type: string
+        seats:
+          type: integer
+          minimum: 1
+          maximum: 10
       required:
         - coachId
         - slotId
@@ -286,6 +372,76 @@ components:
         - parentName
         - parentEmail
         - parentPhone
+    PaymentOrderInput:
+      type: object
+      properties:
+        coachId:
+          type: string
+          minLength: 1
+        slotId:
+          type: string
+          minLength: 1
+        seats:
+          type: integer
+          minimum: 1
+          maximum: 10
+      required:
+        - coachId
+        - slotId
+        - seats
+    PaymentOrder:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [razorpay, simulated]
+        orderId:
+          type: string
+        keyId:
+          type: string
+        amount:
+          type: integer
+        amountPaise:
+          type: integer
+        currency:
+          type: string
+          enum: [INR]
+        coachFee:
+          type: integer
+        dabbleFee:
+          type: integer
+        total:
+          type: integer
+        seats:
+          type: integer
+          minimum: 1
+          maximum: 10
+      required:
+        - mode
+        - orderId
+        - keyId
+        - amount
+        - amountPaise
+        - currency
+        - coachFee
+        - dabbleFee
+        - total
+        - seats
+    VerifyPaymentInput:
+      allOf:
+        - $ref: "#/components/schemas/BookingInput"
+        - type: object
+          properties:
+            orderId:
+              type: string
+              minLength: 1
+            paymentId:
+              type: string
+            signature:
+              type: string
+          required:
+            - orderId
+            - seats
     Booking:
       allOf:
         - $ref: "#/components/schemas/BookingInput"
@@ -301,6 +457,14 @@ components:
               type: integer
             serviceFee:
               type: integer
+            coachFee:
+              type: integer
+            dabbleFee:
+              type: integer
+            seats:
+              type: integer
+              minimum: 1
+              maximum: 10
             total:
               type: integer
             createdAt:
@@ -311,6 +475,9 @@ components:
             - slot
             - trialFee
             - serviceFee
+             - coachFee
+             - dabbleFee
+             - seats
             - total
             - createdAt
     ErrorResponse:
@@ -345,6 +512,14 @@ components:
           type: string
         maxPrice:
           type: ["integer", "null"]
+        society:
+          type: string
+        formatPreference:
+          type: string
+        venuePreference:
+          type: string
+        ageNote:
+          type: string
       required:
         - activity
         - childAge
@@ -353,6 +528,10 @@ components:
         - day
         - timeOfDay
         - maxPrice
+        - society
+        - formatPreference
+        - venuePreference
+        - ageNote
     RecommendationResult:
       type: object
       properties:
@@ -375,7 +554,7 @@ components:
           $ref: "#/components/schemas/RecommendationIntent"
         results:
           type: array
-          minItems: 5
+          minItems: 0
           maxItems: 8
           items:
             $ref: "#/components/schemas/RecommendationResult"

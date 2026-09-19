@@ -26,8 +26,11 @@ import type {
   ErrorResponse,
   HealthStatus,
   ListCoachesParams,
+  PaymentOrder,
+  PaymentOrderInput,
   RecommendationInput,
-  RecommendationResponse
+  RecommendationResponse,
+  VerifyPaymentInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -383,6 +386,182 @@ export const useCreateBooking = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getCreateBookingMutationOptions(options));
+    }
+
+export const getCreatePaymentOrderUrl = () => {
+
+
+
+
+  return `/api/order`
+}
+
+/**
+ * @summary Create a payment order
+ */
+export const createPaymentOrder = async (paymentOrderInput: PaymentOrderInput, options?: Parameters<typeof customFetch>[1]): Promise<PaymentOrder> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PaymentOrder>(getCreatePaymentOrderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(paymentOrderInput)
+  }
+);}
+
+
+
+
+
+export const getCreatePaymentOrderMutationKey = () => ['createPaymentOrder'] as const;
+
+export const getCreatePaymentOrderMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentOrder>>, TError,CreatePaymentOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPaymentOrder>>, TError,CreatePaymentOrderMutationVariables, TContext> => {
+
+const mutationKey = getCreatePaymentOrderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPaymentOrder>>, CreatePaymentOrderMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPaymentOrder(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePaymentOrderMutationResult = NonNullable<Awaited<ReturnType<typeof createPaymentOrder>>>
+    export type CreatePaymentOrderMutationBody = BodyType<PaymentOrderInput>
+    export type CreatePaymentOrderMutationError = ErrorType<ErrorResponse>
+    export type CreatePaymentOrderMutationVariables = {data: BodyType<PaymentOrderInput>}
+
+    /**
+ * @summary Create a payment order
+ */
+export const useCreatePaymentOrder = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentOrder>>, TError,CreatePaymentOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPaymentOrder>>,
+        TError,
+        CreatePaymentOrderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreatePaymentOrderMutationOptions(options));
+    }
+
+export const getVerifyPaymentUrl = () => {
+
+
+
+
+  return `/api/verify`
+}
+
+/**
+ * @summary Verify a payment and create a booking
+ */
+export const verifyPayment = async (verifyPaymentInput: VerifyPaymentInput, options?: Parameters<typeof customFetch>[1]): Promise<Booking> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Booking>(getVerifyPaymentUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(verifyPaymentInput)
+  }
+);}
+
+
+
+
+
+export const getVerifyPaymentMutationKey = () => ['verifyPayment'] as const;
+
+export const getVerifyPaymentMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyPayment>>, TError,VerifyPaymentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyPayment>>, TError,VerifyPaymentMutationVariables, TContext> => {
+
+const mutationKey = getVerifyPaymentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyPayment>>, VerifyPaymentMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  verifyPayment(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof verifyPayment>>>
+    export type VerifyPaymentMutationBody = BodyType<VerifyPaymentInput>
+    export type VerifyPaymentMutationError = ErrorType<ErrorResponse>
+    export type VerifyPaymentMutationVariables = {data: BodyType<VerifyPaymentInput>}
+
+    /**
+ * @summary Verify a payment and create a booking
+ */
+export const useVerifyPayment = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyPayment>>, TError,VerifyPaymentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyPayment>>,
+        TError,
+        VerifyPaymentMutationVariables,
+        TContext
+      > => {
+      return useMutation(getVerifyPaymentMutationOptions(options));
     }
 
 export const getGetBookingUrl = (bookingId: string,) => {
