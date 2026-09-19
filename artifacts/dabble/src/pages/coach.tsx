@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useGetCoach, TrialSlot, Coach } from "@workspace/api-client-react";
 import { Star, MapPin, Clock, ShieldCheck, CheckCircle2, ChevronRight, ArrowLeft, Heart, Share2, Info, Plus, Minus } from "lucide-react";
@@ -16,6 +16,12 @@ export default function CoachDetails() {
   
   const [selectedSlot, setSelectedSlot] = useState<TrialSlot | null>(null);
   const [seats, setSeats] = useState(1);
+
+  useEffect(() => {
+    if (coach?.slots.length && !selectedSlot) {
+      setSelectedSlot(coach.slots[0]);
+    }
+  }, [coach, selectedSlot]);
 
   const handleContinue = () => {
     if (selectedSlot && coach) {

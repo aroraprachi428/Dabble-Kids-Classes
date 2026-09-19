@@ -354,6 +354,8 @@ components:
           type: string
         childAge:
           type: integer
+          minimum: 4
+          maximum: 18
         parentName:
           type: string
         parentEmail:

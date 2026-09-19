@@ -110,6 +110,9 @@ export const GetCoachResponse = zod.object({
 /**
  * @summary Book a trial
  */
+export const createBookingBodyChildAgeMin = 4;
+export const createBookingBodyChildAgeMax = 18;
+
 export const createBookingBodySeatsMax = 10;
 
 
@@ -118,12 +121,15 @@ export const CreateBookingBody = zod.object({
   "coachId": zod.string(),
   "slotId": zod.string(),
   "childName": zod.string(),
-  "childAge": zod.number().int(),
+  "childAge": zod.number().int().min(createBookingBodyChildAgeMin).max(createBookingBodyChildAgeMax),
   "parentName": zod.string(),
   "parentEmail": zod.string(),
   "parentPhone": zod.string(),
   "seats": zod.number().int().min(1).max(createBookingBodySeatsMax).optional()
 })
+
+export const createBookingResponseOneChildAgeMin = 4;
+export const createBookingResponseOneChildAgeMax = 18;
 
 export const createBookingResponseOneSeatsMax = 10;
 
@@ -135,7 +141,7 @@ export const CreateBookingResponse = zod.object({
   "coachId": zod.string(),
   "slotId": zod.string(),
   "childName": zod.string(),
-  "childAge": zod.number().int(),
+  "childAge": zod.number().int().min(createBookingResponseOneChildAgeMin).max(createBookingResponseOneChildAgeMax),
   "parentName": zod.string(),
   "parentEmail": zod.string(),
   "parentPhone": zod.string(),
@@ -228,6 +234,9 @@ export const CreatePaymentOrderResponse = zod.object({
 /**
  * @summary Verify a payment and create a booking
  */
+export const verifyPaymentBodyOneChildAgeMin = 4;
+export const verifyPaymentBodyOneChildAgeMax = 18;
+
 export const verifyPaymentBodyOneSeatsMax = 10;
 
 
@@ -237,7 +246,7 @@ export const VerifyPaymentBody = zod.object({
   "coachId": zod.string(),
   "slotId": zod.string(),
   "childName": zod.string(),
-  "childAge": zod.number().int(),
+  "childAge": zod.number().int().min(verifyPaymentBodyOneChildAgeMin).max(verifyPaymentBodyOneChildAgeMax),
   "parentName": zod.string(),
   "parentEmail": zod.string(),
   "parentPhone": zod.string(),
@@ -247,6 +256,9 @@ export const VerifyPaymentBody = zod.object({
   "paymentId": zod.string().optional(),
   "signature": zod.string().optional()
 }))
+
+export const verifyPaymentResponseOneChildAgeMin = 4;
+export const verifyPaymentResponseOneChildAgeMax = 18;
 
 export const verifyPaymentResponseOneSeatsMax = 10;
 
@@ -258,7 +270,7 @@ export const VerifyPaymentResponse = zod.object({
   "coachId": zod.string(),
   "slotId": zod.string(),
   "childName": zod.string(),
-  "childAge": zod.number().int(),
+  "childAge": zod.number().int().min(verifyPaymentResponseOneChildAgeMin).max(verifyPaymentResponseOneChildAgeMax),
   "parentName": zod.string(),
   "parentEmail": zod.string(),
   "parentPhone": zod.string(),
@@ -322,6 +334,9 @@ export const GetBookingParams = zod.object({
   "bookingId": zod.coerce.string()
 })
 
+export const getBookingResponseOneChildAgeMin = 4;
+export const getBookingResponseOneChildAgeMax = 18;
+
 export const getBookingResponseOneSeatsMax = 10;
 
 export const getBookingResponseTwoSeatsMax = 10;
@@ -332,7 +347,7 @@ export const GetBookingResponse = zod.object({
   "coachId": zod.string(),
   "slotId": zod.string(),
   "childName": zod.string(),
-  "childAge": zod.number().int(),
+  "childAge": zod.number().int().min(getBookingResponseOneChildAgeMin).max(getBookingResponseOneChildAgeMax),
   "parentName": zod.string(),
   "parentEmail": zod.string(),
   "parentPhone": zod.string(),

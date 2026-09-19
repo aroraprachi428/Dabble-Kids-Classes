@@ -33,7 +33,7 @@ const checkoutSchema = z.object({
   parentEmail: z.string().email("Valid email required"),
   parentPhone: z.string().min(10, "Valid phone required").regex(/^[0-9+\-\s()]+$/, "Invalid phone format"),
   childName: z.string().min(2, "Child name is required"),
-  childAge: z.coerce.number().min(3, "Min age 3").max(18, "Max age 18"),
+  childAge: z.coerce.number().min(4, "Child must be at least 4").max(18, "Max age 18"),
 });
 
 type CheckoutValues = z.infer<typeof checkoutSchema>;
@@ -79,7 +79,7 @@ export default function Checkout() {
       parentEmail: "",
       parentPhone: "",
       childName: "",
-      childAge: 3,
+      childAge: 4,
     },
   });
 
@@ -332,7 +332,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel className="text-base font-bold">Age</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="7" className="h-14 rounded-2xl bg-accent/40 border-transparent focus-visible:border-secondary px-4 text-base text-center" {...field} data-testid="input-child-age" />
+                            <Input type="number" min={4} max={18} placeholder="7" className="h-14 rounded-2xl bg-accent/40 border-transparent focus-visible:border-secondary px-4 text-base text-center" {...field} data-testid="input-child-age" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

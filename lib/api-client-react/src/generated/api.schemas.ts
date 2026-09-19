@@ -49,6 +49,10 @@ export interface BookingInput {
   coachId: string;
   slotId: string;
   childName: string;
+  /**
+     * @minimum 4
+     * @maximum 18
+     */
   childAge: number;
   parentName: string;
   parentEmail: string;
