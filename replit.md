@@ -22,7 +22,8 @@ Dabble helps Bangalore parents find vetted coaches and classes for their childre
 
 ## Where things live
 
-- `artifacts/dabble` — React/Vite parent experience
+- `artifacts/dabble-mobile` — primary native Expo app for parents
+- `artifacts/dabble` — earlier React/Vite companion prototype
 - `artifacts/api-server/src/lib/dabble-data.ts` — placeholder coach catalog and in-memory bookings
 - `artifacts/api-server/src/routes` — coach discovery and booking API routes
 - `lib/api-spec/openapi.yaml` — API contract and generated frontend hooks
@@ -38,6 +39,7 @@ Dabble helps Bangalore parents find vetted coaches and classes for their childre
 - Free-text class discovery with editable intent filters
 - Ranked, vetted coach listings and detailed profiles
 - Trial slot selection, checkout fee breakdown, and booking confirmation
+- Native Expo navigation, haptics, safe-area handling, and keyboard-aware checkout
 
 ## User preferences
 

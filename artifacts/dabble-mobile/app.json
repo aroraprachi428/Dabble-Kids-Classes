@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Dabble Mobile",
+    "slug": "dabble-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "dabble-mobile",
+    "userInterfaceStyle": "light",
+    "splash": { "backgroundColor": "#fcf7f1", "image": "./assets/images/icon.png", "resizeMode": "contain" },
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {},
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
