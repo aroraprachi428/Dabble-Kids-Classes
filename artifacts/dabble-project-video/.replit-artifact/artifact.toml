@@ -1,0 +1,29 @@
+kind = "video"
+previewPath = "/dabble-project-video/"
+title = "Dabble Project Story"
+description = "A polished animated product showcase covering Dabble class discovery, parent booking, coach operations, and internal analytics."
+videoAspectRatio = "16:9"
+version = "1.0.0"
+id = "artifacts/dabble-project-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/dabble-project-video/" ]
+localPort = 22142
+
+[services.development]
+run = "pnpm --filter @workspace/dabble-project-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dabble-project-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/dabble-project-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22142"
+BASE_PATH = "/dabble-project-video/"
