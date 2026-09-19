@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
-}
+export type ListCoachesParams = {
+q?: string;
+activity?: string;
+location?: string;
+age?: number;
+day?: string;
+};

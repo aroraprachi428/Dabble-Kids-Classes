@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: coaches
+    description: Coach discovery
+  - name: bookings
+    description: Trial bookings
 paths:
   /healthz:
     get:
@@ -24,6 +28,119 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /coaches:
+    get:
+      operationId: listCoaches
+      tags: [coaches]
+      summary: Find vetted coaches
+      description: Returns coaches ranked against a simple parsed search intent.
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: activity
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: location
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: age
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: day
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Matching coaches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Coach"
+  /coaches/{coachId}:
+    get:
+      operationId: getCoach
+      tags: [coaches]
+      summary: Get coach details
+      parameters:
+        - name: coachId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Coach details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Coach"
+        "404":
+          description: Coach not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /bookings:
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Book a trial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Trial booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          description: Invalid booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /bookings/{bookingId}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get booking confirmation
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Booking confirmation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "404":
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +150,147 @@ components:
           type: string
       required:
         - status
+    Coach:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        activity:
+          type: string
+        venue:
+          type: string
+        area:
+          type: string
+        distance:
+          type: string
+        rating:
+          type: number
+        reviews:
+          type: integer
+        price:
+          type: integer
+        priceLabel:
+          type: string
+        ageRange:
+          type: string
+        experience:
+          type: string
+        description:
+          type: string
+        verified:
+          type: boolean
+        trialAvailable:
+          type: boolean
+        imageUrl:
+          type: string
+        accent:
+          type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrialSlot"
+      required:
+        - id
+        - name
+        - activity
+        - venue
+        - area
+        - distance
+        - rating
+        - reviews
+        - price
+        - priceLabel
+        - ageRange
+        - experience
+        - description
+        - verified
+        - trialAvailable
+        - imageUrl
+        - accent
+        - highlights
+        - slots
+    TrialSlot:
+      type: object
+      properties:
+        id:
+          type: string
+        day:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        label:
+          type: string
+      required:
+        - id
+        - day
+        - date
+        - time
+        - label
+    BookingInput:
+      type: object
+      properties:
+        coachId:
+          type: string
+        slotId:
+          type: string
+        childName:
+          type: string
+        childAge:
+          type: integer
+        parentName:
+          type: string
+        parentEmail:
+          type: string
+        parentPhone:
+          type: string
+      required:
+        - coachId
+        - slotId
+        - childName
+        - childAge
+        - parentName
+        - parentEmail
+        - parentPhone
+    Booking:
+      allOf:
+        - $ref: "#/components/schemas/BookingInput"
+        - type: object
+          properties:
+            id:
+              type: string
+            coach:
+              $ref: "#/components/schemas/Coach"
+            slot:
+              $ref: "#/components/schemas/TrialSlot"
+            trialFee:
+              type: integer
+            serviceFee:
+              type: integer
+            total:
+              type: integer
+            createdAt:
+              type: string
+          required:
+            - id
+            - coach
+            - slot
+            - trialFee
+            - serviceFee
+            - total
+            - createdAt
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
 

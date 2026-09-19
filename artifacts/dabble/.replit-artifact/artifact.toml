@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Dabble"
+description = "A warm, trusted marketplace that helps Bangalore parents discover vetted kids coaches and classes, then book a trial with confidence."
+version = "1.0.0"
+id = "artifacts/dabble"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21635
+
+[services.development]
+run = "pnpm --filter @workspace/dabble run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dabble", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/dabble/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21635"
+BASE_PATH = "/"
