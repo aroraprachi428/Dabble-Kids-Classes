@@ -57,7 +57,9 @@ export default defineConfig({
         'attached_assets',
       ),
     },
-    dedupe: ['react', 'react-dom'],
+    // The generated workspace API client also depends on TanStack Query.
+    // Force one runtime copy so its hooks can see this app's provider.
+    dedupe: ['react', 'react-dom', '@tanstack/react-query'],
   },
   root: path.resolve(import.meta.dirname),
   build: {
