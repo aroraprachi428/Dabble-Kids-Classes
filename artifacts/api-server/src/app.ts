@@ -31,17 +31,18 @@ const allowedOrigin = process.env.APP_ORIGIN;
 app.use(cors({ origin: allowedOrigin ?? true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const demoSeed = seedDemoUsers().catch((error) => {
+void seedDemoUsers().catch((error) => {
   logger.error({ error }, "Unable to seed demo users");
-  throw error;
 });
-app.use(async (req, res, next): Promise<void> => {
-  try {
-    await demoSeed;
-    loadUser(req, res, next);
-  } catch {
-    res.status(503).json({ error: "Demo data is temporarily unavailable" });
-  }
+
+// Keep the deployment health check independent from optional demo-data seeding.
+// A seed failure should not take the static web app or public API offline.
+app.get("/api", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
+app.use((req, res, next): void => {
+  loadUser(req, res, next);
 });
 
 app.use("/api", router);
