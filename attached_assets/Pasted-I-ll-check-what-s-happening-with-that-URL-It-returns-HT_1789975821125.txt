@@ -1,0 +1,72 @@
+I'll check what's happening with that URL.
+
+It returns HTTP 200. Let me look at what's actually being served.
+
+The HTML shell serves fine — it's a React SPA. Let me check the assets and load it in a browser to see what actually breaks.
+
+Assets load fine. Let me open it in the browser to see the actual failure.
+
+Found the actual failure. Let me confirm the cause in the bundle.
+
+Two copies of `@tanstack/react-query` appear to be bundled. Let me confirm by mapping the stack frame.
+
+`BH` is the app's AuthProvider. Let me resolve the rest of the stack frames.
+
+The tree structure is correct (`QueryClientProvider → TooltipProvider → Router → AuthProvider`). So the `client` prop itself must be bad. Let me find it.
+
+The site isn't down — the server and API are healthy. **The React app crashes on first render, on every route**, so you only ever see the "Something went wrong" error boundary.
+
+## Root cause
+
+Two different copies of `@tanstack/react-query` are in the production bundle, and the provider comes from one copy while the hooks come from the other.
+
+From `assets/index-DLoj5jg-.js` there are two independent `createContext(void 0)` query-client contexts:
+
+| | offset in bundle | what's in it |
+|---|---|---|
+| **Copy A** (newer) | ~34.8k | `QueryClient` class, `QueryClientProvider`, `useQueryClient`. Has `setTimeoutProvider` (query-core ≥5.8x) |
+| **Copy B** (older) | ~181k | `useQueryClient`, `useBaseQuery`, `useMutation`. No `setTimeoutProvider` |
+
+Your app root renders the provider from Copy A:
+
+```js
+function App(){ return jsx(QueryClientProvider_A, { client: new QueryClient_A(), children: <TooltipProvider><Router><AuthProvider>…
+```
+
+The component tree is correct — `QueryClientProvider → TooltipProvider → Router → AuthProvider`. But `AuthProvider`'s data hook chain (`useAuthMe → useQuery → useBaseQuery`) resolves to **Copy B**, which reads Copy B's context. Nothing ever provides it, so it throws:
+
+```
+Error: No QueryClient set, use QueryClientProvider to set one
+```
+
+AuthProvider sits above the router, so the error boundary swallows the entire app.
+
+Tellingly, inside that same `AuthProvider`, `useQueryClient` resolves to Copy A (works) while `useQuery` resolves to Copy B (throws) — meaning your component file and your generated API-hooks file are importing `@tanstack/react-query` from two different resolved paths.
+
+## What's *not* wrong
+
+- HTTP 200, HTML shell, JS (967 KB) and CSS all serve fine
+- `/api/auth/me` and `/api/parent/kids` return a proper `401 application/json` — backend is up
+- Zero failed network requests; it dies before any fetch
+
+## Fix
+
+Deduplicate the dependency. Start with:
+
+```bash
+npm ls @tanstack/react-query
+```
+
+You'll almost certainly see two versions. Then force one — in `package.json`:
+
+```json
+"overrides": { "@tanstack/react-query": "^5.90.2" }
+```
+
+followed by a clean reinstall, and belt-and-braces in `vite.config.ts`:
+
+```js
+resolve: { dedupe: ['@tanstack/react-query', 'react', 'react-dom'] }
+```
+
+Note the deploy is fresh (`last-modified: Sun, 20 Sep 2026 07:50:45 GMT`, ~10 minutes before I checked), so this looks like a regression from whatever install or dependency change went into that build — worth checking what moved in the lockfile.
