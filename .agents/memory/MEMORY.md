@@ -1,0 +1,1 @@
+- [Repository delivery](repository-delivery.md) — keep demo deliverables in the app repo; preserve local source and commit identity during outbound synchronization.

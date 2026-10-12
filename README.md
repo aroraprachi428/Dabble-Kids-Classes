@@ -2,6 +2,14 @@
 
 Dabble helps Bangalore parents discover vetted coaches and children’s classes, choose a trial slot, and book with confidence.
 
+## Demo video
+
+[Watch or download the Dabble demo](./demo-video.mp4)
+
+The 22.5-second animated showcase covers parent class discovery and trial booking, coach operations, and the operations dashboard.
+
+The MP4 is stored directly in this repository’s root as `demo-video.mp4`, alongside this README. It is a compact, silent H.264 video at 960 × 540 resolution; no separate video repository or folder is needed.
+
 ## What’s included
 
 - Parent-first class discovery with editable intent filters
@@ -81,11 +89,7 @@ See [`TESTS.md`](./TESTS.md) for the current P0/P1 coverage.
 ## Product notes
 
 - The Bangalore coach catalog is seeded from the supplied fixture data.
-- Trial bookings are currently held in API memory for the MVP and reset when the server restarts.
+- User accounts and booking records are stored in PostgreSQL. Some temporary checkout state remains in API memory, so interrupted payments may need additional recovery handling after a restart.
 - Recommendations use a validated deterministic ranking path when an AI provider is unavailable.
 - Payment pricing is calculated on the server: coach fee is class price multiplied by seats, and the Dabble fee is 10%.
 - Keep credentials such as payment-provider keys and session secrets in environment variables or Replit Secrets; never commit them to the repository.
-
-## License
-
-This project is licensed under the MIT License.
